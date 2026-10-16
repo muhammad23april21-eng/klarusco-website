@@ -99,7 +99,7 @@ export default function About() {
       <PageBanner
         image={images.aboutOffice}
         eyebrow="About Us"
-        title="About KlarusCo"
+        title="About Klarus & Co"
         intro={about.themes[0].title}
         layout="center"
         height="tall"

@@ -8,13 +8,15 @@
 /* ------------------------------------------------------------------ */
 
 export const brand = {
-  name: 'KlarusCo',
+  name: 'Klarus & Co',
   /** Typographic wordmark parts — swap the Logo component for final artwork when available. */
-  wordmark: { primary: 'Klarus', accent: 'Co' },
+  wordmark: { primary: 'Klarus', ampersand: '&', secondary: 'Co' },
+  /** Slogan lockup shown beneath the name, one entry per line. */
+  slogan: ['Consulting & Business Solutions', 'Next Is Now'],
   descriptor: 'Accounting & Financial Services',
   /** Used for the page title and meta description. */
   metaDescription:
-    'KlarusCo provides professional bookkeeping, accounting and financial support — financial reporting, management consultancy, budgeting & forecasting, cost control and actuarial valuation, with flexible hourly or dedicated monthly plans.',
+    'Klarus & Co provides professional bookkeeping, accounting and financial support — financial reporting, management consultancy, budgeting & forecasting, cost control and actuarial valuation, with flexible hourly or dedicated monthly plans.',
 }
 
 const env = import.meta.env
@@ -91,7 +93,7 @@ export const hero = {
   tagline: ['Accurate numbers.', 'Clear insights.', 'Smarter business decisions.'],
   experience: '20+ years of professional experience',
   intro:
-    'With 20+ years of professional experience, KlarusCo provides reliable, practical, and cost-effective bookkeeping and accounting solutions tailored to your business.',
+    'With 20+ years of professional experience, Klarus & Co provides reliable, practical, and cost-effective bookkeeping and accounting solutions tailored to your business.',
   body:
     'From maintaining accurate financial records and delivering timely reports to providing flexible ongoing support, we help you stay financially organized, gain better visibility, and focus on running and growing your business.',
   primaryCta: { label: 'Get a Quote', to: '/pricing' },

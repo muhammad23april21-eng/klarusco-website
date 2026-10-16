@@ -2,21 +2,21 @@
    Design tokens — forest, ivory & champagne
    ===================================================================== */
 :root {
-  --forest: #173d35;
-  --forest-deep: #0f2b25;
-  --forest-mid: #21504580;
-  --ivory: #f7f4ec;
-  --ivory-soft: rgba(247, 244, 236, 0.76);
-  --gold: #c6a66b;
-  --gold-text: #8a6c35; /* accessible gold for small text on light backgrounds */
-  --charcoal: #252b29;
-  --text: #3e4643;
-  --muted: #6b736f;
-  --sage: #dce6df;
+  --forest: #112868; /* primary */
+  --forest-deep: #0b1c4d; /* deeper shade of primary */
+  --forest-mid: #11286880;
+  --ivory: #f5f8fe; /* near-white surface */
+  --ivory-soft: rgba(255, 255, 255, 0.8);
+  --gold: #8fb3f3; /* secondary */
+  --gold-text: #2d55a8; /* accessible secondary-blue for small text on light backgrounds */
+  --charcoal: #112868;
+  --text: #3d4866;
+  --muted: #69728d;
+  --sage: #e4edfd; /* light tint of secondary */
   --white: #ffffff;
-  --line: rgba(37, 43, 41, 0.12);
-  --line-strong: rgba(37, 43, 41, 0.22);
-  --line-light: rgba(247, 244, 236, 0.16);
+  --line: rgba(17, 40, 104, 0.12);
+  --line-strong: rgba(17, 40, 104, 0.22);
+  --line-light: rgba(255, 255, 255, 0.16);
 
   --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
   --font-sans: 'Manrope Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -26,8 +26,8 @@
   --gutter: clamp(20px, 4vw, 48px);
   --section-y: clamp(84px, 10vw, 150px);
   --header-h: 84px;
-  --shadow: 0 24px 60px -28px rgba(15, 43, 37, 0.35);
-  --shadow-lg: 0 40px 90px -36px rgba(15, 43, 37, 0.55);
+  --shadow: 0 24px 60px -28px rgba(11, 28, 77, 0.35);
+  --shadow-lg: 0 40px 90px -36px rgba(11, 28, 77, 0.55);
 }
 
 /* =====================================================================
@@ -114,7 +114,7 @@ code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.85em;
   padding: 0.1em 0.4em;
-  background: rgba(23, 61, 53, 0.08);
+  background: rgba(17, 40, 104, 0.08);
   border-radius: 3px;
 }
 
@@ -362,7 +362,7 @@ code {
 }
 .btn--ghost-light {
   --fg: var(--ivory);
-  --bd: rgba(247, 244, 236, 0.45);
+  --bd: rgba(255, 255, 255, 0.45);
   --fill: var(--ivory);
   backdrop-filter: blur(4px);
 }
@@ -445,7 +445,7 @@ code {
   height: 100%;
   min-height: 200px;
   background:
-    repeating-linear-gradient(0deg, rgba(198, 166, 107, 0.12) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(0deg, rgba(143, 179, 243, 0.12) 0 1px, transparent 1px 28px),
     linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
 }
 

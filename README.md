@@ -50,4 +50,4 @@ Photos in `public/images/` are optimized WebP files downloaded from Unsplash (fr
 
 ## Brand
 
-The KlarusCo wordmark is typographic (no icon). Its text lives in `brand` in `src/content/site.ts`; to use final logo artwork, replace the contents of `src/components/layout/Logo.tsx` and `public/favicon.svg`.
+The Klarus & Co wordmark and its “Consulting & Business Solutions / Next Is Now” slogan are typographic (no icon). Their text lives in `brand` in `src/content/site.ts`; to use final logo artwork, replace the contents of `src/components/layout/Logo.tsx` and `public/favicon.svg`.

@@ -198,7 +198,7 @@ function Intro() {
         </div>
 
         <div className="intro__copy">
-          <Eyebrow tone="forest">About KlarusCo</Eyebrow>
+          <Eyebrow tone="forest">About Klarus &amp; Co</Eyebrow>
           <TextReveal className="display-2" text={experience.title} />
           <Reveal delay={0.15}>
             <p className="lead">{experience.body}</p>

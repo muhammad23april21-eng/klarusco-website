@@ -20,8 +20,8 @@ export function LineChartViz({ tone = 'light', label = 'Illustrative', immediate
       <svg viewBox="0 0 320 110" className="viz__svg" aria-hidden="true">
         <defs>
           <linearGradient id={`area-${tone}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#C6A66B" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#C6A66B" stopOpacity="0" />
+            <stop offset="0%" stopColor="#8FB3F3" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#8FB3F3" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[20, 50, 80].map((y) => (

@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,3 +30,23 @@ jobs:
       - name: Build website
         run: npm run build
 
+      - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/klarusco_deploy
+          chmod 600 ~/.ssh/klarusco_deploy
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy website to Hostinger
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          rsync -avz \
+            -e "ssh -i ~/.ssh/klarusco_deploy -p $SSH_PORT" \
+            dist/ \
+            "u429903730@$SSH_HOST:public_html/"

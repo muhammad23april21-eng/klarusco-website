@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { animate, motion, useInView, useScroll, useTransform } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, CalendarDays, Check, MoveDown } from 'lucide-react'
-import { about, hero, howItWorks, images, plans, quote, routes, services, systems, whyUs } from '../content/site'
+import { ArrowUpRight, CalendarDays, Check, MoveDown } from 'lucide-react'
+import { about, brand, hero, images, plans, routes, services, systems } from '../content/site'
 import { icons } from '../components/icons'
 import { ease, inView, stagger } from '../components/motion'
 import { ButtonLink } from '../components/ui/Button'
 import { Img } from '../components/ui/Img'
 import { Eyebrow, MaskImage, Reveal, TextReveal } from '../components/ui/Reveal'
-import { BarsViz, LineChartViz } from '../components/ui/ChartViz'
-import { ProcessCompact } from '../components/sections/ProcessCompact'
-import { CtaBand } from '../components/sections/CtaBand'
+import { LineChartViz } from '../components/ui/ChartViz'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 /* ------------------------------------------------------------------ */
@@ -43,7 +41,7 @@ function HomeHero() {
             transition={{ duration: 1, ease, delay: 0.3 }}
           >
             <span className="hero__kicker-line" aria-hidden="true" />
-            {hero.experience}
+            {brand.slogan[1]}
           </motion.p>
           <TextReveal as="h1" id="hero-title" immediate delay={0.45} className="hero__title" text={hero.headline} />
           <motion.p
@@ -57,14 +55,6 @@ function HomeHero() {
                 {t}
               </motion.span>
             ))}
-          </motion.p>
-          <motion.p
-            className="hero__body"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease, delay: 1.6 }}
-          >
-            {hero.intro}
           </motion.p>
           <motion.div
             className="hero__ctas"
@@ -154,10 +144,10 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
 
 // Every figure here is a count taken directly from the document's content.
 const credibility = [
-  { value: 20, suffix: '+', label: 'Years of professional experience' },
-  { value: services.items.length, label: 'Accounting & financial services' },
-  { value: systems.items.length, label: 'Accounting & ERP systems we work with' },
-  { value: plans.length, label: 'Flexible engagement options' },
+  { value: 20, suffix: '+', label: 'Professional Team' },
+  { value: services.items.length, label: 'Lower Costs' },
+  { value: systems.items.length, label: 'Flexible Plans' },
+  { value: plans.length, label: 'Peace of Mind' },
 ]
 
 function Credibility() {
@@ -297,178 +287,6 @@ function ServicesPreview() {
   )
 }
 
-/* ------------------------------------------------------------------ */
-/* Why choose us — image-led split                                     */
-/* ------------------------------------------------------------------ */
-
-function WhyChooseUs() {
-  return (
-    <section className="why" aria-labelledby="why-title">
-      <div className="why__media">
-        <MaskImage src={images.whyCollaboration} alt="Two colleagues celebrating at a desk with paperwork and a laptop" direction="right" />
-        <div className="why__quote">
-          <Eyebrow tone="light">Our Focus</Eyebrow>
-          <p>
-            {hero.tagline.map((t) => (
-              <span key={t}>{t}</span>
-            ))}
-          </p>
-        </div>
-      </div>
-      <div className="why__content">
-        <Eyebrow tone="forest">Our Commitment</Eyebrow>
-        <TextReveal id="why-title" className="display-2" text={whyUs.heading} />
-        <motion.ul className="why__list" initial="hidden" whileInView="show" viewport={inView} variants={stagger.container}>
-          {whyUs.items.map((b) => {
-            const Icon = icons[b.icon]
-            return (
-              <motion.li key={b.title} variants={stagger.item} className="why__item">
-                <span className="why__icon">
-                  <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
-                </span>
-                <div>
-                  <h3>{b.title}</h3>
-                  <p>{b.body}</p>
-                </div>
-              </motion.li>
-            )
-          })}
-        </motion.ul>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Systems showcase — typographic marquee on forest green              */
-/* ------------------------------------------------------------------ */
-
-function SystemsShowcase() {
-  const row = [...systems.items, ...systems.items]
-  return (
-    <section className="sys-show section section--forest" aria-labelledby="sys-show-title">
-      <div className="container sys-show__head">
-        <div>
-          <Eyebrow tone="gold">Technology</Eyebrow>
-          <TextReveal id="sys-show-title" className="display-2 text-ivory" text={systems.heading} />
-        </div>
-        <Reveal delay={0.15} className="sys-show__aside">
-          <p>{systems.intro}</p>
-          <ButtonLink to={routes.systems} variant="ghost-light">
-            Explore systems
-          </ButtonLink>
-        </Reveal>
-      </div>
-
-      <div className="marquee" aria-hidden="true">
-        <div className="marquee__track">
-          {row.map((name, i) => (
-            <span key={i} className={`marquee__item ${i % 2 ? 'is-outline' : ''}`}>
-              {name}
-              <span className="marquee__sep">◆</span>
-            </span>
-          ))}
-        </div>
-      </div>
-      <ul className="sr-only">
-        {systems.items.map((s) => (
-          <li key={s}>{s}</li>
-        ))}
-      </ul>
-
-      <div className="container sys-show__custom">
-        <Reveal className="sys-show__custom-inner">
-          <span className="sys-show__custom-label">{systems.custom.title}</span>
-          <p>{systems.custom.body}</p>
-        </Reveal>
-        <div className="sys-show__viz">
-          <BarsViz tone="dark" />
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Process preview                                                     */
-/* ------------------------------------------------------------------ */
-
-function ProcessPreview() {
-  return (
-    <section className="section section--ivory process-preview" aria-labelledby="process-title">
-      <div className="container">
-        <div className="process-preview__head">
-          <div>
-            <Eyebrow tone="forest">{howItWorks.eyebrow}</Eyebrow>
-            <TextReveal id="process-title" className="display-2" text={howItWorks.heading} />
-          </div>
-          <Reveal delay={0.2}>
-            <ButtonLink to={routes.howItWorks} variant="text">
-              See the full process
-            </ButtonLink>
-          </Reveal>
-        </div>
-        <ProcessCompact />
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Pricing teaser                                                      */
-/* ------------------------------------------------------------------ */
-
-function PricingTeaser() {
-  return (
-    <section className="section section--white teaser" aria-labelledby="teaser-title">
-      <div className="container teaser__grid">
-        <div className="teaser__copy">
-          <Eyebrow tone="forest">{quote.eyebrow}</Eyebrow>
-          <TextReveal id="teaser-title" className="display-2" text={quote.heading} />
-          <Reveal delay={0.15}>
-            <p className="lead">{quote.intro[0]}</p>
-          </Reveal>
-          <Reveal delay={0.25}>
-            <ButtonLink to={routes.pricing}>View full pricing</ButtonLink>
-          </Reveal>
-        </div>
-
-        <div className="teaser__plans">
-          {plans.map((p, i) => {
-            const prices = p.pricing.tiers.map((t) => t.price)
-            const unit = p.pricing.tiers[0].unit
-            return (
-              <Reveal key={p.id} delay={0.1 + i * 0.12}>
-                <Link to={`${routes.pricing}?plan=${p.id}`} className={`teaser-plan teaser-plan--${p.id}`}>
-                  <span className="teaser-plan__name">{p.name}</span>
-                  {p.subtitle && <span className="teaser-plan__sub">{p.subtitle}</span>}
-                  {p.highlight && <span className="teaser-plan__sub">{p.highlight}</span>}
-                  <span className="teaser-plan__range">
-                    {prices[0]}
-                    <span className="teaser-plan__dash">–</span>
-                    {prices[prices.length - 1]}
-                    <small>/ {unit}</small>
-                  </span>
-                  <span className="teaser-plan__levels">
-                    {p.pricing.tiers.map((t) => (
-                      <span key={t.id}>
-                        {t.title} <b>{t.price}</b>
-                      </span>
-                    ))}
-                  </span>
-                  <span className="teaser-plan__go">
-                    Choose this plan <ArrowRight size={16} aria-hidden="true" />
-                  </span>
-                </Link>
-              </Reveal>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 export default function Home() {
   usePageTitle()
   return (
@@ -477,11 +295,6 @@ export default function Home() {
       <Credibility />
       <Intro />
       <ServicesPreview />
-      <WhyChooseUs />
-      <SystemsShowcase />
-      <ProcessPreview />
-      <PricingTeaser />
-      <CtaBand image={images.ctaSkyline} />
     </>
   )
 }

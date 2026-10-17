@@ -12,7 +12,7 @@ export function Footer() {
     <footer className="footer">
       <div className="footer__lines" aria-hidden="true" />
       <div className="container">
-        <div className="footer__top">
+        <div className="footer__main">
           <div className="footer__brand">
             <Logo tone="light" />
             <p className="footer__statement">
@@ -20,41 +20,47 @@ export function Footer() {
                 <span key={t}>{t}</span>
               ))}
             </p>
+            <div className="footer__cta">
+              <Link to={routes.pricing} className="btn btn--gold">
+                <span>Get a Quote</span>
+              </Link>
+              <Link to={routes.meeting} className="btn btn--ghost-light">
+                <span>Book a Meeting</span>
+              </Link>
+            </div>
+            <div className="footer__experience">
+              <span className="footer__figure">
+                20<sup>+</sup>
+              </span>
+              <span>Years of professional experience</span>
+            </div>
           </div>
-          <div className="footer__cta">
-            <Link to={routes.pricing} className="btn btn--gold">
-              <span>Get a Quote</span>
-            </Link>
-            <Link to={routes.meeting} className="btn btn--ghost-light">
-              <span>Book a Meeting</span>
-            </Link>
-          </div>
-        </div>
 
-        <div className="footer__grid">
-          <div>
+          <nav className="footer__col" aria-label="Company">
             <h2 className="footer__heading">Company</h2>
-            <ul>
+            <ul className="footer__links">
               {nav.map((n) => (
                 <li key={n.to}>
                   <Link to={n.to}>{n.label}</Link>
                 </li>
               ))}
             </ul>
-          </div>
-          <div>
+          </nav>
+
+          <nav className="footer__col" aria-label="Services">
             <h2 className="footer__heading">Services</h2>
-            <ul>
+            <ul className="footer__links">
               {services.items.map((s) => (
                 <li key={s.slug}>
                   <Link to={`${routes.services}#${s.slug}`}>{s.title}</Link>
                 </li>
               ))}
             </ul>
-          </div>
-          <div>
+          </nav>
+
+          <div className="footer__col">
             <h2 className="footer__heading">Get in touch</h2>
-            <ul className="footer__contact">
+            <ul className="footer__links footer__contact">
               <li>
                 <MessageCircle size={16} aria-hidden="true" />
                 {wa ? (
@@ -74,12 +80,6 @@ export function Footer() {
                 <Link to={routes.meeting}>Schedule a Meeting</Link>
               </li>
             </ul>
-          </div>
-          <div className="footer__experience">
-            <span className="footer__figure">
-              20<sup>+</sup>
-            </span>
-            <span>Years of professional experience</span>
           </div>
         </div>
 

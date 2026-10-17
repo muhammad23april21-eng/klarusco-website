@@ -49,4 +49,4 @@ jobs:
           rsync -avz \
             -e "ssh -i ~/.ssh/klarusco_deploy -p $SSH_PORT" \
             dist/ \
-            "u429903730@$SSH_HOST:public_html/"
+            "u429903730@$SSH_HOST:/home/u429903730/domains/klarusco.com/public_html/"

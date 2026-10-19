@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { animate, motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { ArrowUpRight, CalendarDays, Check, MoveDown } from 'lucide-react'
-import { about, brand, hero, images, plans, routes, services, systems } from '../content/site'
+import { about, hero, homeHero, images, plans, routes, services, systems } from '../content/site'
 import { icons } from '../components/icons'
 import { ease, inView, stagger } from '../components/motion'
 import { ButtonLink } from '../components/ui/Button'
@@ -20,7 +20,8 @@ function HomeHero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
   const copyY = useTransform(scrollYProgress, [0, 1], ['0%', '-12%'])
-  const copyOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+  // Fade only once the copy has scrolled up behind the header, so the CTAs stay fully legible while visible
+  const copyOpacity = useTransform(scrollYProgress, [0.75, 1], [1, 0])
 
   return (
     <section ref={ref} className="hero" aria-labelledby="hero-title">
@@ -41,26 +42,24 @@ function HomeHero() {
             transition={{ duration: 1, ease, delay: 0.3 }}
           >
             <span className="hero__kicker-line" aria-hidden="true" />
-            {brand.slogan[1]}
+            {homeHero.topLine}
           </motion.p>
-          <TextReveal as="h1" id="hero-title" immediate delay={0.45} className="hero__title" text={hero.headline} />
-          <motion.p
-            className="hero__tagline"
-            initial="hidden"
-            animate="show"
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.18, delayChildren: 1.2 } } }}
+          <TextReveal as="h1" id="hero-title" immediate delay={0.5} className="hero__title" text={homeHero.headline} />
+          <motion.div
+            className="hero__body"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease, delay: 1.2 }}
           >
-            {hero.tagline.map((t) => (
-              <motion.span key={t} variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.8, ease } } }}>
-                {t}
-              </motion.span>
+            {homeHero.description.map((d) => (
+              <p key={d}>{d}</p>
             ))}
-          </motion.p>
+          </motion.div>
           <motion.div
             className="hero__ctas"
             initial="hidden"
             animate="show"
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 1.8 } } }}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 1.5 } } }}
           >
             <motion.div variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } } }}>
               <ButtonLink to={hero.primaryCta.to} size="lg">

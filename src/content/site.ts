@@ -100,6 +100,16 @@ export const hero = {
   secondaryCta: { label: 'Book a Meeting', to: '/book-a-meeting' },
 }
 
+/** Homepage hero — Webs Site Content V2.docx, "Home Page" › Top Line & Section 1. */
+export const homeHero = {
+  topLine: 'Next Is Now',
+  headline: 'Bookkeeping & Financial Consulting',
+  description: [
+    'Klarus & Co. is a professional bookkeeping and financial consulting firm delivering tailored solutions designed around each client’s unique needs.',
+    'We help businesses cut costs, boost efficiency, and leverage expert guidance to strengthen profitability and long-term sustainability.',
+  ],
+}
+
 /* ------------------------------------------------------------------ */
 /* Why Businesses Choose Us                                            */
 /* ------------------------------------------------------------------ */

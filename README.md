@@ -50,4 +50,4 @@ Photos in `public/images/` are optimized WebP files downloaded from Unsplash (fr
 
 ## Brand
 
-The Klarus & Co wordmark and its “Consulting & Business Solutions / Next Is Now” slogan are typographic (no icon). Their text lives in `brand` in `src/content/site.ts`; to use final logo artwork, replace the contents of `src/components/layout/Logo.tsx`. The browser-tab icons (`public/favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`) use a navy “K&C” monogram; when replacing them, bump the `?v=` number on their links in `index.html` so browsers drop cached copies.
+The Klarus & Co wordmark and its “Next Is Now” tagline are typographic (no icon). Their text lives in `brand` in `src/content/site.ts`; to use final logo artwork, replace the contents of `src/components/layout/Logo.tsx`. The browser-tab icons (`public/favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`) use a navy “K&C” monogram; when replacing them, bump the `?v=` number on their links in `index.html` so browsers drop cached copies.

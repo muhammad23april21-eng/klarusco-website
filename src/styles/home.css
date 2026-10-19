@@ -248,7 +248,7 @@
   font-variant-numeric: lining-nums tabular-nums;
 }
 .cred__label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
   color: var(--text);

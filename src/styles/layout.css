@@ -121,15 +121,9 @@
   white-space: nowrap;
 }
 .logo__slogan-line {
-  font-size: 8.5px;
-  letter-spacing: 0.2em;
-  /* offset trailing tracking so the line stays optically centred */
-  margin-right: -0.2em;
-  opacity: 0.85;
-}
-.logo__slogan-line + .logo__slogan-line {
   font-size: 7.5px;
   letter-spacing: 0.42em;
+  /* offset trailing tracking so the line stays optically centred */
   margin-right: -0.42em;
   opacity: 0.7;
 }
@@ -283,11 +277,6 @@
     gap: 3px;
   }
   .logo__slogan-line {
-    font-size: 7.5px;
-    letter-spacing: 0.16em;
-    margin-right: -0.16em;
-  }
-  .logo__slogan-line + .logo__slogan-line {
     font-size: 6.5px;
     letter-spacing: 0.36em;
     margin-right: -0.36em;
@@ -750,9 +739,6 @@
   gap: 5px;
 }
 .footer .logo__slogan-line {
-  font-size: 9.5px;
-}
-.footer .logo__slogan-line + .logo__slogan-line {
   font-size: 8.5px;
 }
 .footer__statement {

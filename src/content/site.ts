@@ -11,8 +11,8 @@ export const brand = {
   name: 'Klarus & Co',
   /** Typographic wordmark parts — swap the Logo component for final artwork when available. */
   wordmark: { primary: 'Klarus', ampersand: '&', secondary: 'Co' },
-  /** Slogan lockup shown beneath the name, one entry per line. */
-  slogan: ['Consulting & Business Solutions', 'Next Is Now'],
+  /** Tagline shown beneath the name, one entry per line. */
+  slogan: ['Next Is Now'],
   descriptor: 'Accounting & Financial Services',
   /** Used for the page title and meta description. */
   metaDescription:

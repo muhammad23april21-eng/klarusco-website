@@ -1,17 +1,24 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowRight, ChevronRight } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronRight } from 'lucide-react'
 import { images, routes, services, type Service } from '../content/site'
 import { icons } from '../components/icons'
 import { ease } from '../components/motion'
 import { ButtonLink } from '../components/ui/Button'
 import { Img } from '../components/ui/Img'
-import { MaskImage, Reveal, TextReveal } from '../components/ui/Reveal'
-import { BarsViz, LineChartViz } from '../components/ui/ChartViz'
-import { CtaBand } from '../components/sections/CtaBand'
+import { MaskImage, TextReveal } from '../components/ui/Reveal'
 import { usePageTitle } from '../hooks/usePageTitle'
 
-const [bookkeeping, reporting, consultancy, budgeting, costControl, actuarial] = services.items
+/** Descriptive alt text for each service photo (kept from the previous per-service sections). */
+const imageAlt: Record<string, string> = {
+  bookkeeping: 'Calculator, pen and financial paperwork on a desk',
+  'financial-reporting': 'Laptop displaying financial charts',
+  'management-consultancy': 'Team meeting around a conference table',
+  'budgeting-and-forecasting': 'Hand-drawn growth chart with ruler and pens',
+  'cost-control': 'Calculator and financial documents',
+  'actuarial-valuation': 'Professional reviewing and signing documents',
+}
 
 function ServiceHead({ s, index, tone = 'dark' }: { s: Service; index: number; tone?: 'dark' | 'light' }) {
   const Icon = icons[s.icon]
@@ -22,14 +29,6 @@ function ServiceHead({ s, index, tone = 'dark' }: { s: Service; index: number; t
       </span>
       <span className="svc-head__num">Service {String(index + 1).padStart(2, '0')}</span>
     </div>
-  )
-}
-
-function QuoteLink({ light = false }: { light?: boolean }) {
-  return (
-    <ButtonLink to={routes.pricing} variant={light ? 'ghost-light' : 'text'}>
-      Get a Quote
-    </ButtonLink>
   )
 }
 
@@ -64,12 +63,41 @@ function ServicesBanner() {
   )
 }
 
-function ServiceNav() {
+/** The original secondary services navbar — now drives the single showcase section below it. */
+function ServiceNav({ active, onSelect }: { active: number; onSelect: (i: number) => void }) {
+  const innerRef = useRef<HTMLDivElement>(null)
+  // On narrow screens the navbar scrolls sideways: keep the selected service visible (without moving the page)
+  useEffect(() => {
+    const inner = innerRef.current
+    const link = inner?.children[active] as HTMLElement | undefined
+    if (!inner || !link || inner.scrollWidth <= inner.clientWidth) return
+    const left = link.offsetLeft - inner.offsetLeft
+    if (left < inner.scrollLeft || left + link.offsetWidth > inner.scrollLeft + inner.clientWidth) {
+      inner.scrollTo({ left: Math.max(0, left - 16), behavior: 'smooth' })
+    }
+  }, [active])
   return (
     <nav className="svc-nav" aria-label="Services on this page">
-      <div className="container svc-nav__inner">
+      <div className="container svc-nav__inner" ref={innerRef}>
         {services.items.map((s, i) => (
-          <a key={s.slug} href={`#${s.slug}`}>
+          <a
+            key={s.slug}
+            href={`#${s.slug}`}
+            className={i === active ? 'is-active' : undefined}
+            aria-current={i === active ? 'true' : undefined}
+            aria-controls="svc-showcase-panel"
+            onMouseEnter={() => onSelect(i)}
+            onFocus={() => onSelect(i)}
+            onClick={(e) => {
+              e.preventDefault()
+              onSelect(i)
+              // If the showcase has scrolled out of view, bring it back under the sticky navbar
+              const panel = document.getElementById('svc-showcase-panel')
+              if (panel && panel.getBoundingClientRect().top < 0) {
+                document.getElementById('services-showcase')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }}
+          >
             <span>{String(i + 1).padStart(2, '0')}</span>
             {s.title}
           </a>
@@ -79,139 +107,86 @@ function ServiceNav() {
   )
 }
 
+/** Single main services section: shows the service selected in the navbar (Bookkeeping by default). */
+function ServiceShowcase({ active }: { active: number }) {
+  const s = services.items[active]
+  const total = String(services.items.length).padStart(2, '0')
+  return (
+    <section id="services-showcase" className="section section--ivory svc-explorer" aria-label={services.eyebrow}>
+      {/* Anchors for /services#<slug> links (e.g. from the footer): the layout scrolls here */}
+      {services.items.map((item) => (
+        <span key={item.slug} id={item.slug} className="svc-explorer__anchor" aria-hidden="true" />
+      ))}
+      <div className="container">
+        <div id="svc-showcase-panel" className="svc-explorer__panel" aria-live="polite">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={s.slug}
+              className="svc-explorer__panel-inner"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
+            >
+              <motion.figure
+                className="svc-explorer__img"
+                initial={{ clipPath: 'inset(0 0 0 100%)' }}
+                animate={{ clipPath: 'inset(0 0 0 0%)' }}
+                transition={{ duration: 0.9, ease }}
+              >
+                <motion.div className="svc-explorer__img-inner" initial={{ scale: 1.12 }} animate={{ scale: 1 }} transition={{ duration: 1.4, ease }}>
+                  <Img src={s.image} alt={imageAlt[s.slug] ?? ''} />
+                </motion.div>
+                <figcaption className="svc-explorer__caption" aria-hidden="true">
+                  {String(active + 1).padStart(2, '0')} / {total}
+                </figcaption>
+              </motion.figure>
+              <motion.div
+                className="svc-explorer__text"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease, delay: 0.15 }}
+              >
+                <ServiceHead s={s} index={active} />
+                {s.badge && <span className="badge-gold">{s.badge}</span>}
+                <h2 className="display-2">{s.title}</h2>
+                {s.body.map((p, i) => (
+                  <p key={p} className={i === 0 ? 'lead' : undefined}>
+                    {p}
+                  </p>
+                ))}
+                <div className="svc-actions">
+                  <ButtonLink to={routes.pricing}>Get a Quote</ButtonLink>
+                  <ButtonLink to={routes.howItWorks} variant="text">
+                    How it works
+                  </ButtonLink>
+                </div>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function Services() {
   usePageTitle('Our Services')
+  const { hash } = useLocation()
+  const fromHash = services.items.findIndex((item) => `#${item.slug}` === hash)
+  const [active, setActive] = useState(fromHash >= 0 ? fromHash : 0)
+  // Footer links like /services#cost-control select that service
+  const [lastHash, setLastHash] = useState(hash)
+  if (hash !== lastHash) {
+    setLastHash(hash)
+    if (fromHash >= 0) setActive(fromHash)
+  }
+
   return (
     <>
       <ServicesBanner />
-      <ServiceNav />
-
-      {/* 01 Bookkeeping — feature split */}
-      <section id={bookkeeping.slug} className="svc-feature" aria-labelledby={`${bookkeeping.slug}-title`}>
-        <MaskImage src={bookkeeping.image} alt="Calculator, pen and financial paperwork on a desk" className="svc-feature__img" direction="right" />
-        <div className="svc-feature__copy">
-          <ServiceHead s={bookkeeping} index={0} />
-          {bookkeeping.badge && <span className="badge-gold">{bookkeeping.badge}</span>}
-          <TextReveal id={`${bookkeeping.slug}-title`} className="display-1" text={bookkeeping.title} />
-          <Reveal delay={0.15}>
-            {bookkeeping.body.map((p, i) => (
-              <p key={p} className={i === 0 ? 'lead' : undefined}>
-                {p}
-              </p>
-            ))}
-          </Reveal>
-          <Reveal delay={0.25} className="svc-actions">
-            <ButtonLink to={routes.pricing}>Get a Quote</ButtonLink>
-            <ButtonLink to={routes.howItWorks} variant="text">
-              How it works
-            </ButtonLink>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* 02 Financial Reporting — copy + image with live chart overlay */}
-      <section id={reporting.slug} className="section section--white svc-overlay" aria-labelledby={`${reporting.slug}-title`}>
-        <div className="container svc-overlay__grid">
-          <div className="svc-overlay__copy">
-            <ServiceHead s={reporting} index={1} />
-            <TextReveal id={`${reporting.slug}-title`} className="display-2" text={reporting.title} />
-            <Reveal delay={0.15}>
-              <p className="lead">{reporting.body[0]}</p>
-            </Reveal>
-            <Reveal delay={0.25}>
-              <QuoteLink />
-            </Reveal>
-          </div>
-          <div className="svc-overlay__media">
-            <MaskImage src={reporting.image} alt="Laptop displaying financial charts" direction="left" />
-            <Reveal className="svc-overlay__chart" delay={0.5}>
-              <LineChartViz />
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* 03 Management Consultancy — full-bleed image */}
-      <section id={consultancy.slug} className="svc-bleed" aria-labelledby={`${consultancy.slug}-title`}>
-        <div className="svc-bleed__bg">
-          <Img src={consultancy.image} alt="" />
-        </div>
-        <div className="svc-bleed__overlay" aria-hidden="true" />
-        <div className="container svc-bleed__inner">
-          <div className="svc-bleed__copy">
-            <ServiceHead s={consultancy} index={2} tone="light" />
-            <TextReveal id={`${consultancy.slug}-title`} className="display-1 text-ivory" text={consultancy.title} />
-            <Reveal delay={0.15}>
-              <p className="lead text-ivory-soft">{consultancy.body[0]}</p>
-            </Reveal>
-            <Reveal delay={0.25}>
-              <QuoteLink light />
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* 04 + 05 Budgeting & Forecasting / Cost Control — paired editorial */}
-      <section className="section section--sage svc-pair" aria-label={`${budgeting.title} and ${costControl.title}`}>
-        <div className="container svc-pair__grid">
-          {[budgeting, costControl].map((s, i) => (
-            <article key={s.slug} id={s.slug} className={`svc-pair__item svc-pair__item--${i}`} aria-labelledby={`${s.slug}-title`}>
-              <MaskImage src={s.image} alt={i === 0 ? 'Hand-drawn growth chart with ruler and pens' : 'Calculator and financial documents'} className="svc-pair__img" delay={i * 0.15} />
-              <div className="svc-pair__copy">
-                <ServiceHead s={s} index={3 + i} />
-                <TextReveal id={`${s.slug}-title`} as="h2" className="display-3" text={s.title} />
-                <Reveal delay={0.1}>
-                  <p>{s.body[0]}</p>
-                </Reveal>
-                <Reveal delay={0.2}>
-                  <QuoteLink />
-                </Reveal>
-              </div>
-              {i === 0 && (
-                <div className="svc-pair__viz">
-                  <BarsViz />
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* 06 Actuarial Valuation — typographic with arch-framed image */}
-      <section id={actuarial.slug} className="section section--ivory svc-typo" aria-labelledby={`${actuarial.slug}-title`}>
-        <span className="svc-typo__glyph" aria-hidden="true">
-          Σ
-        </span>
-        <div className="container svc-typo__grid">
-          <div className="svc-typo__copy">
-            <ServiceHead s={actuarial} index={5} />
-            <TextReveal id={`${actuarial.slug}-title`} className="display-1" text={actuarial.title} />
-            <Reveal delay={0.15}>
-              <p className="lead">{actuarial.body[0]}</p>
-            </Reveal>
-            <Reveal delay={0.25}>
-              <QuoteLink />
-            </Reveal>
-          </div>
-          <MaskImage src={actuarial.image} alt="Professional reviewing and signing documents" className="svc-typo__img" />
-        </div>
-      </section>
-
-      {/* Quote CTA strip */}
-      <section className="svc-quote">
-        <div className="container svc-quote__inner">
-          <Reveal>
-            <p className="svc-quote__text">Every business has different accounting and financial management requirements.</p>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <Link to={routes.pricing} className="svc-quote__link">
-              Choose the plan that fits your business <ArrowRight size={20} aria-hidden="true" />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
-
-      <CtaBand image={images.pricingDesk} />
+      <ServiceNav active={active} onSelect={setActive} />
+      <ServiceShowcase active={active} />
     </>
   )
 }

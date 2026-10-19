@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { animate, motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { ArrowUpRight, CalendarDays, Check, MoveDown } from 'lucide-react'
-import { about, hero, homeHero, images, plans, routes, services, systems } from '../content/site'
+import { about, hero, homeHero, images, routes, services } from '../content/site'
 import { icons } from '../components/icons'
 import { ease, inView, stagger } from '../components/motion'
 import { ButtonLink } from '../components/ui/Button'
@@ -141,12 +141,12 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
   )
 }
 
-// Every figure here is a count taken directly from the document's content.
+// The four hooks, numbered in sequence.
 const credibility = [
-  { value: 20, suffix: '+', label: 'Professional Team' },
-  { value: services.items.length, label: 'Lower Costs' },
-  { value: systems.items.length, label: 'Flexible Plans' },
-  { value: plans.length, label: 'Peace of Mind' },
+  { value: 1, label: 'Professional Team' },
+  { value: 2, label: 'Lower Costs' },
+  { value: 3, label: 'Flexible Plans' },
+  { value: 4, label: 'Peace of Mind' },
 ]
 
 function Credibility() {
@@ -156,7 +156,7 @@ function Credibility() {
         {credibility.map((c) => (
           <motion.div key={c.label} className="cred__item" variants={stagger.item}>
             <span className="cred__value">
-              <CountUp to={c.value} suffix={c.suffix} />
+              <CountUp to={c.value} />
             </span>
             <span className="cred__label">{c.label}</span>
           </motion.div>

@@ -97,7 +97,7 @@ export default function About() {
         title="About Klarus & Co"
         intro={about.themes[0].title}
         layout="center"
-        height="tall"
+        height="medium"
         overlay="charcoal"
       />
 

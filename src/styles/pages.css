@@ -1,6 +1,11 @@
 /* =====================================================================
    ABOUT
    ===================================================================== */
+/* About page: tighter vertical rhythm between banner, Who We Are and What Defines Us */
+.statement,
+.themes {
+  padding-block: clamp(56px, 6vw, 88px);
+}
 .statement__grid {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.3fr) minmax(0, 0.9fr);
@@ -248,41 +253,105 @@
 .themes__tabs {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--line-strong);
+  gap: 10px;
 }
+/* Each point is a refined, clearly clickable card */
 .themes__tab {
   position: relative;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 16px;
-  padding: 22px 0 22px 28px;
+  padding: 18px 44px 18px 24px;
   text-align: left;
   color: var(--muted);
-  transition: color 0.3s;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(17, 40, 104, 0.04);
+  cursor: pointer;
+  transition:
+    color 0.35s var(--ease),
+    background-color 0.35s var(--ease),
+    border-color 0.35s var(--ease),
+    box-shadow 0.35s var(--ease),
+    transform 0.35s var(--ease);
 }
-.themes__tab:hover,
+.themes__tab::after {
+  /* subtle arrow cue on the right */
+  content: '→';
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--gold-text);
+  opacity: 0;
+  transform: translate(-6px, -50%);
+  transition:
+    opacity 0.35s var(--ease),
+    transform 0.35s var(--ease);
+}
+.themes__tab:hover {
+  color: var(--forest);
+  border-color: rgba(143, 179, 243, 0.8);
+  box-shadow: 0 10px 24px -18px rgba(17, 40, 104, 0.45);
+  transform: translateX(4px);
+}
+.themes__tab:hover::after {
+  opacity: 0.7;
+  transform: translate(0, -50%);
+}
+/* Active point: tinted background, light-blue border, navy accent + badge, strong text */
 .themes__tab.is-active {
   color: var(--forest);
+  background: var(--sage);
+  border-color: var(--gold);
+  box-shadow: 0 14px 30px -20px rgba(17, 40, 104, 0.55);
+  transform: none;
+}
+.themes__tab.is-active::after {
+  opacity: 1;
+  color: var(--forest);
+  transform: translate(0, -50%);
 }
 .themes__tab-num {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   color: var(--gold-text);
+  border: 1px solid rgba(143, 179, 243, 0.7);
+  border-radius: 50%;
+  transition:
+    color 0.35s var(--ease),
+    background-color 0.35s var(--ease),
+    border-color 0.35s var(--ease);
+}
+.themes__tab.is-active .themes__tab-num {
+  color: var(--white);
+  background: var(--forest);
+  border-color: var(--forest);
 }
 .themes__tab-label {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 1.4rem + 1vw, 2.5rem);
+  font-size: clamp(1.6rem, 1.3rem + 0.8vw, 2.1rem);
   font-weight: 500;
   line-height: 1;
 }
+.themes__tab.is-active .themes__tab-label {
+  font-weight: 600;
+}
 .themes__indicator {
   position: absolute;
-  left: -2px;
+  left: 0;
   top: 0;
   bottom: 0;
-  width: 3px;
-  background: var(--gold);
+  width: 4px;
+  background: var(--forest);
 }
 .themes__panel {
   min-height: 420px;
@@ -331,23 +400,29 @@
   .themes__body {
     grid-template-columns: minmax(0, 1fr);
   }
+  /* Tablet/mobile: a 2×2 grid so every point (and the active one) is always visible */
   .themes__tabs {
-    flex-direction: row;
-    overflow-x: auto;
-    border-left: 0;
-    border-bottom: 1px solid var(--line-strong);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
   .themes__tab {
-    padding: 14px 20px 16px 0;
-    flex: none;
+    gap: 12px;
+    padding: 14px 16px 14px 18px;
   }
-  .themes__indicator {
-    left: 0;
-    right: 20px;
-    top: auto;
-    bottom: -1px;
-    width: auto;
-    height: 3px;
+  .themes__tab::after {
+    display: none;
+  }
+  .themes__tab:hover {
+    transform: none;
+  }
+  .themes__tab-num {
+    width: 30px;
+    height: 30px;
+    font-size: 10.5px;
+  }
+  .themes__tab-label {
+    font-size: 1.35rem;
   }
 }
 @media (max-width: 680px) {
@@ -497,6 +572,7 @@
   scroll-margin-top: calc(var(--header-h) + 64px);
 }
 #services-showcase {
+  padding-top: clamp(40px, 5vw, 64px);
   scroll-margin-top: calc(var(--header-h) + 56px);
 }
 .svc-explorer__panel {
@@ -577,6 +653,9 @@
 /* =====================================================================
    SYSTEMS
    ===================================================================== */
+.sys-wall {
+  padding-block: clamp(56px, 6vw, 88px);
+}
 .sys-wall__grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -584,7 +663,15 @@
   border-left: 1px solid var(--line-strong);
 }
 .sys-wall__item {
+  /* white tile (default) */
+  --tile-bg: transparent;
+  --tile-fg: var(--charcoal);
+  --tile-idx: var(--gold-text);
+  --tile-fill: var(--forest);
+  --tile-fg-hover: var(--ivory);
+  --tile-idx-hover: var(--gold);
   position: relative;
+  background: var(--tile-bg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -596,49 +683,47 @@
   isolation: isolate;
   transition: color 0.5s var(--ease);
 }
+/* Navy tiles in a checkerboard (4 columns): 1, 3, 6, 8 — hover fill reverses to white */
+.sys-wall__item:nth-child(8n + 1),
+.sys-wall__item:nth-child(8n + 3),
+.sys-wall__item:nth-child(8n + 6),
+.sys-wall__item:nth-child(8n + 8) {
+  --tile-bg: var(--forest);
+  --tile-fg: var(--white);
+  --tile-idx: var(--gold);
+  --tile-fill: var(--white);
+  --tile-fg-hover: var(--forest);
+  --tile-idx-hover: var(--gold-text);
+}
 .sys-wall__item::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--forest);
+  background: var(--tile-fill);
   clip-path: circle(0% at 100% 100%);
   transition: clip-path 0.7s var(--ease);
 }
 .sys-wall__item:hover::before {
   clip-path: circle(150% at 100% 100%);
 }
-.sys-wall__mono {
-  position: absolute;
-  right: -6px;
-  bottom: -40px;
-  z-index: -1;
-  font-family: var(--font-display);
-  font-size: 11rem;
-  line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(17, 40, 104, 0.12);
-  transition: -webkit-text-stroke-color 0.5s;
-}
-.sys-wall__item:hover .sys-wall__mono {
-  -webkit-text-stroke-color: rgba(143, 179, 243, 0.4);
-}
 .sys-wall__index {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: var(--gold-text);
+  color: var(--tile-idx);
+  transition: color 0.5s var(--ease);
 }
 .sys-wall__name {
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 1.3rem + 0.8vw, 2.2rem);
   font-weight: 500;
   line-height: 1.05;
-  color: var(--charcoal);
+  color: var(--tile-fg);
   transition: color 0.5s;
 }
 .sys-wall__item:hover .sys-wall__name {
-  color: var(--ivory);
+  color: var(--tile-fg-hover);
 }
 .sys-wall__brand {
   display: flex;
@@ -650,23 +735,23 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 62px;
+  height: 62px;
   background: var(--white);
   border: 1px solid var(--line);
   transition: border-color 0.5s var(--ease);
 }
 .sys-wall__logo img {
   display: block;
-  width: 34px;
-  height: 34px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
 }
 .sys-wall__item:hover .sys-wall__logo {
   border-color: transparent;
 }
 .sys-wall__item:hover .sys-wall__index {
-  color: var(--gold);
+  color: var(--tile-idx-hover);
 }
 @media (max-width: 900px) {
   .sys-wall__grid {
@@ -674,6 +759,24 @@
   }
   .sys-wall__item {
     min-height: 160px;
+  }
+  /* Two columns: re-pair the checkerboard (navy tiles 1, 4, 5, 8) */
+  .sys-wall__item:nth-child(n) {
+    --tile-bg: transparent;
+    --tile-fg: var(--charcoal);
+    --tile-idx: var(--gold-text);
+    --tile-fill: var(--forest);
+    --tile-fg-hover: var(--ivory);
+    --tile-idx-hover: var(--gold);
+  }
+  .sys-wall__item:nth-child(4n + 1),
+  .sys-wall__item:nth-child(4n + 4) {
+    --tile-bg: var(--forest);
+    --tile-fg: var(--white);
+    --tile-idx: var(--gold);
+    --tile-fill: var(--white);
+    --tile-fg-hover: var(--forest);
+    --tile-idx-hover: var(--gold-text);
   }
 }
 /* Narrow two-column tiles: stack the logo above the name so long names never overflow */
@@ -684,12 +787,12 @@
     gap: 12px;
   }
   .sys-wall__logo {
-    width: 40px;
-    height: 40px;
+    width: 52px;
+    height: 52px;
   }
   .sys-wall__logo img {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -900,16 +1003,6 @@
 .vig__option.is-on {
   border-color: var(--forest);
   background: rgba(228, 237, 253, 0.5);
-}
-.vig__radio {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid var(--line-strong);
-  border-radius: 50%;
-}
-.vig__option.is-on .vig__radio {
-  border: 5px solid var(--forest);
 }
 .vig__level {
   display: flex;

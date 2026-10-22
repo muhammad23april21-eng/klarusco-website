@@ -37,7 +37,6 @@ function VignetteModel() {
           className={`vig__option ${i === 1 ? 'is-on' : ''}`}
           variants={{ hidden: { opacity: 0, x: -16 }, show: { opacity: 1, x: 0, transition: { duration: 0.7, ease, delay: 0.3 + i * 0.15 } } }}
         >
-          <span className="vig__radio" aria-hidden="true" />
           <span>
             <strong>{p.name}</strong>
             <small>{p.id === 'hourly' ? 'Flexible hourly support' : 'Dedicated monthly professional'}</small>

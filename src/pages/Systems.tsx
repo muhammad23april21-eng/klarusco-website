@@ -49,9 +49,6 @@ export default function Systems() {
                 className="sys-wall__item"
                 variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.8, ease } } }}
               >
-                <span className="sys-wall__mono" aria-hidden="true">
-                  {s.charAt(0)}
-                </span>
                 <span className="sys-wall__index">{String(i + 1).padStart(2, '0')}</span>
                 <span className="sys-wall__brand">
                   <span className="sys-wall__logo" aria-hidden="true">

@@ -212,6 +212,8 @@
   position: relative;
   z-index: 2;
   margin-top: -64px;
+  /* the part below the hero shares the Services section's white background, so the two read as one surface */
+  background: linear-gradient(180deg, transparent 64px, var(--white) 64px);
 }
 .cred__inner {
   display: grid;
@@ -230,13 +232,16 @@
 .cred__item:last-child {
   border-right: 0;
 }
-.cred__item:first-child {
+.cred__item:first-child,
+.cred__item:nth-child(3) {
   background: var(--forest);
 }
-.cred__item:first-child .cred__value {
+.cred__item:first-child .cred__value,
+.cred__item:nth-child(3) .cred__value {
   color: var(--gold);
 }
-.cred__item:first-child .cred__label {
+.cred__item:first-child .cred__label,
+.cred__item:nth-child(3) .cred__label {
   color: var(--ivory);
 }
 .cred__value {
@@ -273,6 +278,12 @@
 /* =====================================================================
    Editorial intro — layered images
    ===================================================================== */
+/* Home › About: the Services section above already supplies its own bottom padding,
+   so avoid stacking a second full section padding on top of it */
+.intro.section {
+  padding-top: clamp(24px, 3vw, 48px);
+  padding-bottom: clamp(64px, 7vw, 96px);
+}
 .intro__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

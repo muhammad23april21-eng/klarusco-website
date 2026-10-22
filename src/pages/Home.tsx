@@ -292,8 +292,8 @@ export default function Home() {
     <>
       <HomeHero />
       <Credibility />
-      <Intro />
       <ServicesPreview />
+      <Intro />
     </>
   )
 }

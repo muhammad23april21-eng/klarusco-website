@@ -79,8 +79,7 @@ export const nav = [
   { label: 'About', to: routes.about },
   { label: 'Services', to: routes.services },
   { label: 'Systems', to: routes.systems },
-  { label: 'How It Works', to: routes.howItWorks },
-  { label: 'Pricing', to: routes.pricing },
+  { label: 'How It Works', to: routes.pricing },
   { label: 'Contact', to: routes.contact },
 ]
 

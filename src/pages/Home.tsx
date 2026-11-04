@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { animate, motion, useInView, useScroll, useTransform } from 'framer-motion'
-import { ArrowUpRight, CalendarDays, Check, MoveDown } from 'lucide-react'
+import { ArrowUpRight, Check, MoveDown } from 'lucide-react'
 import { about, hero, homeHero, images, routes, services } from '../content/site'
 import { icons } from '../components/icons'
 import { ease, inView, stagger } from '../components/motion'
@@ -64,17 +64,6 @@ function HomeHero() {
             <motion.div variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } } }}>
               <ButtonLink to={hero.primaryCta.to} size="lg">
                 {hero.primaryCta.label}
-              </ButtonLink>
-            </motion.div>
-            <motion.div variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } } }}>
-              <ButtonLink
-                to={hero.secondaryCta.to}
-                variant="ghost-light"
-                size="lg"
-                arrow={false}
-                icon={<CalendarDays size={18} aria-hidden="true" />}
-              >
-                {hero.secondaryCta.label}
               </ButtonLink>
             </motion.div>
           </motion.div>

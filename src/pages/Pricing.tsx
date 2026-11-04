@@ -1,15 +1,69 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, CalendarDays, Check, ChevronRight, Clock, UserRoundCheck } from 'lucide-react'
-import { contact, images, plans, quote, routes, type Plan, type PlanId, type TierId } from '../content/site'
+import { ArrowRight, ChevronRight, Clock, MessageSquareText, UserRoundCheck } from 'lucide-react'
+import { contact, howItWorks, images, plans, quote, routes, type Plan, type PlanId } from '../content/site'
 import { useSelection } from '../hooks/SelectionContext'
-import { ease } from '../components/motion'
+import { ease, inView } from '../components/motion'
+import { stepIcons } from '../components/icons'
 import { Eyebrow, MaskImage, Reveal, TextReveal } from '../components/ui/Reveal'
 import { ButtonLink } from '../components/ui/Button'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 const planIcons = { hourly: Clock, monthly: UserRoundCheck }
+
+/**
+ * Step 1 — "Tell Us About Your Business", taken from the (temporarily disabled) How It Works page,
+ * using the same timeline markup and styles (journey__*, vig__*).
+ */
+function TellUsStep() {
+  const step = howItWorks.steps[0]
+  const Icon = stepIcons[0]
+  return (
+    <section className="section section--ivory journey" aria-label={step.title}>
+      <div className="container">
+        <ol className="journey__track">
+          <span className="journey__rail" aria-hidden="true" />
+          <motion.li className="journey__step" initial="hidden" whileInView="show" viewport={inView}>
+            <motion.span
+              className="journey__node"
+              aria-hidden="true"
+              variants={{ hidden: { scale: 0.4, opacity: 0 }, show: { scale: 1, opacity: 1, transition: { duration: 0.6, ease } } }}
+            >
+              <Icon size={22} strokeWidth={1.4} />
+            </motion.span>
+            <motion.div
+              className="journey__text"
+              variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.9, ease, delay: 0.1 } } }}
+            >
+              <span className="journey__num">01</span>
+              <span className="journey__label">Step 1</span>
+              <h2>{step.title}</h2>
+              <p>{step.body}</p>
+            </motion.div>
+            <motion.div
+              className="journey__visual"
+              variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.9, ease, delay: 0.2 } } }}
+            >
+              <div className="vig vig--message">
+                <div className="vig__bar">
+                  <MessageSquareText size={16} aria-hidden="true" />
+                  <span>Your requirements</span>
+                </div>
+                <p className="vig__quote">Share your bookkeeping and accounting requirements with us.</p>
+                <div className="vig__lines" aria-hidden="true">
+                  <span style={{ width: '88%' }} />
+                  <span style={{ width: '72%' }} />
+                  <span style={{ width: '54%' }} />
+                </div>
+              </div>
+            </motion.div>
+          </motion.li>
+        </ol>
+      </div>
+    </section>
+  )
+}
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
 /** Five days × eight hours — a literal picture of the monthly plan's dedicated professional. */
@@ -73,7 +127,7 @@ function PricingBanner() {
           >
             <Link to="/">Home</Link>
             <ChevronRight size={14} aria-hidden="true" />
-            <span aria-current="page">Pricing</span>
+            <span aria-current="page">How It Works</span>
           </motion.nav>
           <motion.p className="eyebrow eyebrow--forest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
             {quote.eyebrow}
@@ -100,35 +154,18 @@ function PricingBanner() {
   )
 }
 
-function PlanChooser({ active, onChoose }: { active: PlanId; onChoose: (id: PlanId) => void }) {
+/** The two engagement options, shown as static information cards (not selectable). */
+function PlanCards() {
   return (
-    <div className="chooser" role="radiogroup" aria-label="Engagement option">
+    <div className="chooser">
       {plans.map((p, i) => {
         const Icon = planIcons[p.id]
-        const checked = active === p.id
         return (
           <Reveal key={p.id} delay={i * 0.1} className="chooser__wrap">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={checked}
-              className={`chooser__opt ${checked ? 'is-on' : ''}`}
-              onClick={() => onChoose(p.id)}
-              onKeyDown={(e) => {
-                if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
-                  e.preventDefault()
-                  onChoose(plans[(i + 1) % plans.length].id)
-                }
-              }}
-              tabIndex={checked ? 0 : -1}
-            >
-              {checked && <motion.span layoutId="chooser-bg" className="chooser__bg" transition={{ duration: 0.6, ease }} />}
+            <div className={`chooser__opt chooser__opt--${p.id}`}>
               <span className="chooser__top">
                 <span className="chooser__icon">
                   <Icon size={22} strokeWidth={1.4} aria-hidden="true" />
-                </span>
-                <span className="chooser__radio" aria-hidden="true">
-                  {checked && <Check size={13} strokeWidth={3} />}
                 </span>
               </span>
               <span className="chooser__name">{p.name}</span>
@@ -139,7 +176,7 @@ function PlanChooser({ active, onChoose }: { active: PlanId; onChoose: (id: Plan
                   <span key={d}>{d}</span>
                 ))}
               </span>
-            </button>
+            </div>
           </Reveal>
         )
       })}
@@ -150,9 +187,10 @@ function PlanChooser({ active, onChoose }: { active: PlanId; onChoose: (id: Plan
 function TierLedger({ plan }: { plan: Plan }) {
   const { selection, setSelection } = useSelection()
   const navigate = useNavigate()
-  const go = (tier: TierId, to: string) => {
-    setSelection({ plan: plan.id, tier })
-    navigate(to)
+  // One shared quote request for the plan: keeps a level chosen earlier for this plan, otherwise sends the plan only
+  const requestQuote = () => {
+    setSelection({ plan: plan.id, tier: selection.plan === plan.id ? selection.tier : null })
+    navigate(routes.contact)
   }
 
   return (
@@ -203,29 +241,25 @@ function TierLedger({ plan }: { plan: Plan }) {
                   <span className="ledger__unit">/ {t.unit}</span>
                 </p>
                 <p className="ledger__body">{t.body}</p>
-                <div className="ledger__actions">
-                  <button type="button" className="btn btn--gold" onClick={() => go(t.id, routes.contact)}>
-                    <span>Request a Quote</span>
-                    <ArrowRight className="btn__arrow" size={16} aria-hidden="true" />
-                  </button>
-                  <button type="button" className="ledger__meet" onClick={() => go(t.id, routes.meeting)}>
-                    <CalendarDays size={15} aria-hidden="true" /> Book a Meeting
-                  </button>
-                </div>
               </motion.li>
             )
           })}
         </ul>
+        <div className="ledger__cta">
+          <button type="button" className="btn btn--gold btn--lg" onClick={requestQuote}>
+            <span>Request a Quote</span>
+            <ArrowRight className="btn__arrow" size={17} aria-hidden="true" />
+          </button>
+        </div>
       </motion.div>
     </AnimatePresence>
   )
 }
 
 export default function Pricing() {
-  usePageTitle('Get a Quote & Pricing')
+  usePageTitle('How It Works')
   const [params, setParams] = useSearchParams()
   const { selection, setSelection } = useSelection()
-  const ledgerRef = useRef<HTMLElement>(null)
 
   const fromUrl = params.get('plan')
   const active: PlanId = fromUrl === 'hourly' || fromUrl === 'monthly' ? fromUrl : (selection.plan ?? 'hourly')
@@ -246,37 +280,25 @@ export default function Pricing() {
   return (
     <>
       <PricingBanner />
+      <TellUsStep />
 
       <section className="section section--white chooser-section" aria-labelledby="chooser-title">
         <div className="container">
           <div className="chooser-section__head">
-            <span className="step-tag">Step 1</span>
+            <span className="step-tag">Step 2</span>
             <h2 id="chooser-title" className="display-3">
               Choose Your Support Model
             </h2>
           </div>
-          <PlanChooser active={active} onChoose={choose} />
-          <div className="chooser-section__next">
-            <button
-              type="button"
-              className="btn btn--forest btn--lg"
-              onClick={() => ledgerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            >
-              <span>{quote.nextLabel}</span>
-              <ArrowRight className="btn__arrow" size={18} aria-hidden="true" />
-            </button>
-            <span className="chooser-section__hint" aria-live="polite">
-              {plan.name} selected
-            </span>
-          </div>
+          <PlanCards />
         </div>
       </section>
 
-      <section ref={ledgerRef} className="section ledger" aria-labelledby="ledger-title">
+      <section className="section ledger" aria-labelledby="ledger-title">
         <div className="ledger__pattern" aria-hidden="true" />
         <div className="container">
           <div className="ledger__switch-row">
-            <span className="step-tag step-tag--light">Step 2 · Choose Your Expertise Level</span>
+            <span className="step-tag step-tag--light">Step 3 · Choose Your Expertise Level</span>
             <div className="seg" role="tablist" aria-label="Pricing plan">
               {plans.map((p) => (
                 <button
@@ -307,9 +329,6 @@ export default function Pricing() {
           </div>
           <Reveal delay={0.2} className="unsure__actions">
             <ButtonLink to={routes.contact}>Contact Us</ButtonLink>
-            <ButtonLink to={routes.meeting} variant="outline-dark" arrow={false} icon={<CalendarDays size={17} aria-hidden="true" />}>
-              Book a Meeting
-            </ButtonLink>
           </Reveal>
         </div>
       </section>

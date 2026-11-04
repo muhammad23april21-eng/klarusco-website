@@ -1,227 +1,670 @@
-import { useId, useState, type FormEvent } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, ArrowRight, CheckCircle2, Loader2, Mail, MessageCircle, Settings2 } from 'lucide-react'
-import { config, plans, type PlanId, type TierId } from '../../content/site'
-import { useSelection } from '../../hooks/SelectionContext'
-import { ease } from '../motion'
+import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  MessageCircle,
+  Settings2,
+} from "lucide-react";
+import {
+  isValidPhoneNumber,
+  parsePhoneNumberFromString,
+  type CountryCode,
+} from "libphonenumber-js/min";
+import { config, systems } from "../../content/site";
+import {
+  countries,
+  defaultCountry,
+  findCountry,
+} from "../../content/countries";
+import { useSelection } from "../../hooks/SelectionContext";
+import { ease } from "../motion";
+import { PhoneInput } from "../ui/PhoneInput";
+
+/* Options from the "Quote Form" spreadsheet */
+const businessTypes = [
+  "Services",
+  "Trading",
+  "Manufacturing",
+  "Not Sure",
+] as const;
+const systemOptions = [...systems.items, "Not Sure"];
+const planModels = [
+  { id: "hourly", label: "Hourly Based" },
+  { id: "monthly", label: "Monthly Fixed" },
+  { id: "unsure", label: "Not Sure" },
+] as const;
+type PlanModel = (typeof planModels)[number]["id"];
+
+const resourceRoles = [
+  { id: "bookkeeper", label: "Bookkeeper" },
+  { id: "supervisor", label: "Supervisor" },
+  { id: "manager", label: "Manager" },
+] as const;
+type RoleId = (typeof resourceRoles)[number]["id"];
+
+/** Per plan: what the second column of the resource table asks for. */
+const resourceColumn: Record<
+  "hourly" | "monthly",
+  { heading: string; unit: string; max: number }
+> = {
+  hourly: { heading: "Number of Resources", unit: "resources", max: 99 },
+  monthly: { heading: "Estimated Hours", unit: "hours", max: 999 },
+};
 
 interface Values {
-  name: string
-  email: string
-  company: string
-  phone: string
-  plan: PlanId | 'unsure'
-  level: TierId | 'unsure'
-  message: string
+  companyName: string;
+  country: string;
+  representativeName: string;
+  email: string;
+  phoneCountry: CountryCode;
+  phone: string;
+  businessType: string;
+  systemInUse: string;
+  planModel: PlanModel | "";
+  resources: Record<RoleId, string>;
+  resourcesNotSure: boolean;
+  requirements: string;
 }
 
-type Errors = Partial<Record<keyof Values, string>>
-type Status = 'idle' | 'submitting' | 'sent' | 'error' | 'unconfigured'
+type FieldKey = Exclude<keyof Values, "phoneCountry" | "resourcesNotSure">;
+type Errors = Partial<Record<FieldKey, string>>;
+type Status = "idle" | "submitting" | "sent" | "error" | "unconfigured";
 
-const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-const phoneRe = /^[+()\d\s-]{6,20}$/
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const emptyResources: Record<RoleId, string> = {
+  bookkeeper: "",
+  supervisor: "",
+  manager: "",
+};
+
+const showsResources = (p: Values["planModel"]): p is "hourly" | "monthly" =>
+  p === "hourly" || p === "monthly";
 
 function validate(v: Values): Errors {
-  const e: Errors = {}
-  if (v.name.trim().length < 2) e.name = 'Please enter your name.'
-  if (!v.email.trim()) e.email = 'Please enter your email address.'
-  else if (!emailRe.test(v.email.trim())) e.email = 'Please enter a valid email address.'
-  if (v.phone.trim() && !phoneRe.test(v.phone.trim())) e.phone = 'Please enter a valid phone number.'
-  if (v.message.trim().length < 10) e.message = 'Please tell us a little more about your requirements (at least 10 characters).'
-  else if (v.message.length > 2000) e.message = 'Please keep your message under 2,000 characters.'
-  return e
+  const e: Errors = {};
+  if (v.companyName.trim().length < 2)
+    e.companyName = "Please enter your company name.";
+  if (!v.country) e.country = "Please select your country.";
+  if (v.representativeName.trim().length < 2)
+    e.representativeName = "Please enter the representative’s name.";
+  if (!v.email.trim()) e.email = "Please enter your email address.";
+  else if (!emailRe.test(v.email.trim()))
+    e.email = "Please enter a valid email address.";
+  if (!v.phone.trim()) e.phone = "Please enter your contact number.";
+  else if (!isValidPhoneNumber(v.phone, v.phoneCountry))
+    e.phone = "Please enter a valid number for the selected country code.";
+  if (!v.businessType) e.businessType = "Please select your business type.";
+  if (!v.systemInUse) e.systemInUse = "Please select the system you use.";
+  if (!v.planModel) e.planModel = "Please select a plan model.";
+  if (showsResources(v.planModel) && !v.resourcesNotSure) {
+    const values = Object.values(v.resources);
+    const max = resourceColumn[v.planModel].max;
+    if (values.some((x) => x !== "" && (!/^\d+$/.test(x) || Number(x) > max))) {
+      e.resources = `Please enter whole numbers between 0 and ${max}.`;
+    } else if (!values.some((x) => Number(x) > 0)) {
+      e.resources = `Please enter ${resourceColumn[v.planModel].unit} for at least one role, or tick “Not Sure”.`;
+    }
+  }
+  if (v.requirements.trim().length < 10)
+    e.requirements =
+      "Please tell us a little more about your requirements (at least 10 characters).";
+  else if (v.requirements.length > 2000)
+    e.requirements = "Please keep your requirements under 2,000 characters.";
+  return e;
 }
 
-const levelLabels: Record<TierId, string> = { bookkeeper: 'Bookkeeper', supervisor: 'Supervisor', manager: 'Manager' }
+/** Contact number in international format, e.g. +923001234567 (falls back to code + digits). */
+function fullNumber(v: Values) {
+  const parsed = parsePhoneNumberFromString(v.phone, v.phoneCountry);
+  return (
+    parsed?.number ??
+    `${findCountry(v.phoneCountry)?.dial ?? ""}${v.phone.replace(/\D/g, "")}`
+  );
+}
+
+function resourceRows(v: Values) {
+  if (!showsResources(v.planModel)) return [];
+  if (v.resourcesNotSure)
+    return [{ resource: "Not Sure", value: null as number | null }];
+  return resourceRoles
+    .filter((r) => Number(v.resources[r.id]) > 0)
+    .map((r) => ({ resource: r.label, value: Number(v.resources[r.id]) }));
+}
+
+/** Submitted payload — every field from the quote form, with readable values. */
+function payload(v: Values) {
+  const plan = planModels.find((p) => p.id === v.planModel)?.label ?? "";
+  const unit = showsResources(v.planModel)
+    ? resourceColumn[v.planModel].heading
+    : "";
+  return {
+    _subject: "Quote request",
+    companyName: v.companyName.trim(),
+    country: findCountry(v.country)?.name ?? v.country,
+    representativeName: v.representativeName.trim(),
+    email: v.email.trim(),
+    contactNumber: fullNumber(v),
+    contactCountryCode: findCountry(v.phoneCountry)?.dial ?? "",
+    businessType: v.businessType,
+    systemInUse: v.systemInUse,
+    planModel: plan,
+    resourceMeasure: unit,
+    resources: resourceRows(v),
+    requirements: v.requirements.trim(),
+  };
+}
 
 function summarise(v: Values) {
-  const plan = v.plan === 'unsure' ? 'Not sure yet' : plans.find((p) => p.id === v.plan)?.name
-  const level = v.level === 'unsure' ? 'Not sure yet' : levelLabels[v.level]
-  const details = [
-    `Name: ${v.name}`,
-    `Email: ${v.email}`,
-    v.company ? `Company: ${v.company}` : null,
-    v.phone ? `Phone: ${v.phone}` : null,
-    `Support model: ${plan}`,
-    `Expertise level: ${level}`,
-  ].filter(Boolean)
-  return `${details.join('\n')}\n\n${v.message}`
+  const p = payload(v);
+  const res = p.resources.length
+    ? `Resources (${p.resourceMeasure}):\n${p.resources.map((r) => `  • ${r.resource}${r.value !== null ? `: ${r.value}` : ""}`).join("\n")}`
+    : null;
+  return [
+    `Company name: ${p.companyName}`,
+    `Country: ${p.country}`,
+    `Representative name: ${p.representativeName}`,
+    `Email: ${p.email}`,
+    `Contact number: ${p.contactNumber}`,
+    `Business type: ${p.businessType}`,
+    `System in use: ${p.systemInUse}`,
+    `Plan model: ${p.planModel}`,
+    res,
+    "",
+    p.requirements,
+  ]
+    .filter((l) => l !== null)
+    .join("\n");
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <fieldset className="quote-form__group">
+      <legend className="quote-form__legend">{title}</legend>
+      {children}
+    </fieldset>
+  );
 }
 
 export function ContactForm() {
-  const { selection } = useSelection()
-  const uid = useId()
+  const { selection } = useSelection();
+  const uid = useId();
   const [values, setValues] = useState<Values>({
-    name: '',
-    email: '',
-    company: '',
-    phone: '',
-    plan: selection.plan ?? 'unsure',
-    level: selection.tier ?? 'unsure',
-    message: '',
-  })
-  const [errors, setErrors] = useState<Errors>({})
-  const [touched, setTouched] = useState<Partial<Record<keyof Values, boolean>>>({})
-  const [status, setStatus] = useState<Status>('idle')
+    companyName: "",
+    country: "",
+    representativeName: "",
+    email: "",
+    phoneCountry: defaultCountry,
+    phone: "",
+    businessType: "",
+    systemInUse: "",
+    // Pre-fill the plan when the visitor came from the How It Works page
+    planModel: selection.plan ?? "",
+    resources: emptyResources,
+    resourcesNotSure: false,
+    requirements: "",
+  });
+  const [errors, setErrors] = useState<Errors>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>(
+    {},
+  );
+  const [status, setStatus] = useState<Status>("idle");
 
-  const set = <K extends keyof Values>(k: K, val: Values[K]) => {
-    const next = { ...values, [k]: val }
-    setValues(next)
-    if (touched[k]) setErrors(validate(next))
-    if (status !== 'idle' && status !== 'submitting') setStatus('idle')
-  }
-  const blur = (k: keyof Values) => {
-    setTouched((t) => ({ ...t, [k]: true }))
-    setErrors(validate(values))
-  }
+  const update = (patch: Partial<Values>, keys: FieldKey[]) => {
+    const next = { ...values, ...patch };
+    setValues(next);
+    if (keys.some((k) => touched[k])) setErrors(validate(next));
+    if (status !== "idle" && status !== "submitting") setStatus("idle");
+  };
+  const set = <K extends FieldKey>(k: K, val: Values[K]) =>
+    update({ [k]: val } as Partial<Values>, [k]);
+  const blur = (k: FieldKey) => {
+    setTouched((t) => ({ ...t, [k]: true }));
+    setErrors(validate(values));
+  };
 
   const onSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    const errs = validate(values)
-    setErrors(errs)
-    setTouched({ name: true, email: true, phone: true, message: true })
+    e.preventDefault();
+    const errs = validate(values);
+    setErrors(errs);
+    setTouched({
+      companyName: true,
+      country: true,
+      representativeName: true,
+      email: true,
+      phone: true,
+      businessType: true,
+      systemInUse: true,
+      planModel: true,
+      resources: true,
+      requirements: true,
+    });
     if (Object.keys(errs).length) {
-      const first = Object.keys(errs)[0]
-      document.getElementById(`${uid}-${first}`)?.focus()
-      return
+      const first = Object.keys(errs)[0];
+      const target =
+        first === "resources"
+          ? `${uid}-resources-bookkeeper`
+          : `${uid}-${first}`;
+      document.getElementById(target)?.focus();
+      return;
     }
     if (!config.formEndpoint) {
-      setStatus('unconfigured')
-      return
+      setStatus("unconfigured");
+      return;
     }
-    setStatus('submitting')
+    setStatus("submitting");
     try {
       const res = await fetch(config.formEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ ...values, _subject: 'Website enquiry' }),
-      })
-      setStatus(res.ok ? 'sent' : 'error')
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload(values)),
+      });
+      setStatus(res.ok ? "sent" : "error");
     } catch {
-      setStatus('error')
+      setStatus("error");
     }
-  }
+  };
 
-  const text = summarise(values)
+  const text = summarise(values);
   const mailto = config.email
-    ? `mailto:${config.email}?subject=${encodeURIComponent('Website enquiry')}&body=${encodeURIComponent(text)}`
-    : null
-  const wa = config.whatsappNumber ? `https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(text)}` : null
+    ? `mailto:${config.email}?subject=${encodeURIComponent("Quote request")}&body=${encodeURIComponent(text)}`
+    : null;
+  const wa = config.whatsappNumber
+    ? `https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(text)}`
+    : null;
 
-  const field = (k: keyof Values) => ({
+  const field = (k: FieldKey) => ({
     id: `${uid}-${k}`,
     name: k,
-    'aria-invalid': Boolean(touched[k] && errors[k]),
-    'aria-describedby': touched[k] && errors[k] ? `${uid}-${k}-err` : undefined,
+    "aria-invalid": Boolean(touched[k] && errors[k]),
+    "aria-describedby": touched[k] && errors[k] ? `${uid}-${k}-err` : undefined,
     onBlur: () => blur(k),
-  })
-  const err = (k: keyof Values) =>
+  });
+  const err = (k: FieldKey) =>
     touched[k] && errors[k] ? (
       <span id={`${uid}-${k}-err`} className="field__error">
         <AlertCircle size={13} aria-hidden="true" /> {errors[k]}
       </span>
-    ) : null
+    ) : null;
+  const label = (k: FieldKey, text: string) => (
+    <label htmlFor={`${uid}-${k}`}>
+      {text} <span aria-hidden="true">*</span>
+    </label>
+  );
 
-  if (status === 'sent') {
+  if (status === "sent") {
     return (
-      <motion.div className="form-done" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease }} role="status">
+      <motion.div
+        className="form-done"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease }}
+        role="status"
+      >
         <CheckCircle2 size={40} strokeWidth={1.3} aria-hidden="true" />
-        <h3>Thank you — your message has been sent.</h3>
-        <p>We’ll be in touch to discuss your bookkeeping and accounting requirements.</p>
+        <h3>Thank you — your quote request has been sent.</h3>
+        <p>Our team will review your information and get back to you.</p>
       </motion.div>
-    )
+    );
   }
 
-  return (
-    <form className="form" onSubmit={onSubmit} noValidate>
-      <div className="form__row">
-        <div className="field">
-          <label htmlFor={`${uid}-name`}>
-            Full name <span aria-hidden="true">*</span>
-          </label>
-          <input {...field('name')} type="text" autoComplete="name" required value={values.name} onChange={(e) => set('name', e.target.value)} />
-          {err('name')}
-        </div>
-        <div className="field">
-          <label htmlFor={`${uid}-email`}>
-            Email address <span aria-hidden="true">*</span>
-          </label>
-          <input {...field('email')} type="email" autoComplete="email" required value={values.email} onChange={(e) => set('email', e.target.value)} />
-          {err('email')}
-        </div>
-      </div>
-      <div className="form__row">
-        <div className="field">
-          <label htmlFor={`${uid}-company`}>Company</label>
-          <input {...field('company')} type="text" autoComplete="organization" value={values.company} onChange={(e) => set('company', e.target.value)} />
-        </div>
-        <div className="field">
-          <label htmlFor={`${uid}-phone`}>Phone / WhatsApp</label>
-          <input {...field('phone')} type="tel" autoComplete="tel" value={values.phone} onChange={(e) => set('phone', e.target.value)} />
-          {err('phone')}
-        </div>
-      </div>
-      <div className="form__row">
-        <div className="field">
-          <label htmlFor={`${uid}-plan`}>Support model</label>
-          <select {...field('plan')} value={values.plan} onChange={(e) => set('plan', e.target.value as Values['plan'])}>
-            <option value="unsure">Not sure yet</option>
-            {plans.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor={`${uid}-level`}>Expertise level</label>
-          <select {...field('level')} value={values.level} onChange={(e) => set('level', e.target.value as Values['level'])}>
-            <option value="unsure">Not sure yet</option>
-            {(Object.keys(levelLabels) as TierId[]).map((t) => (
-              <option key={t} value={t}>
-                {levelLabels[t]}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="field">
-        <label htmlFor={`${uid}-message`}>
-          Tell us about your business and your accounting requirements <span aria-hidden="true">*</span>
-        </label>
-        <textarea {...field('message')} rows={6} required value={values.message} onChange={(e) => set('message', e.target.value)} />
-        <span className="field__count" aria-hidden="true">
-          {values.message.length} / 2000
-        </span>
-        {err('message')}
-      </div>
+  const column = showsResources(values.planModel)
+    ? resourceColumn[values.planModel]
+    : null;
 
-      <div className="form__foot">
+  return (
+    <form className="form quote-form" onSubmit={onSubmit} noValidate>
+      <Section title="Basic information">
+        <div className="form__row">
+          <div className="field">
+            {label("companyName", "Company Name")}
+            <input
+              {...field("companyName")}
+              type="text"
+              autoComplete="organization"
+              required
+              value={values.companyName}
+              onChange={(e) => set("companyName", e.target.value)}
+            />
+            {err("companyName")}
+          </div>
+          <div className="field">
+            {label("country", "Country")}
+            <select
+              {...field("country")}
+              required
+              value={values.country}
+              onChange={(e) => {
+                const code = e.target.value;
+                // Match the phone country code to the chosen country unless a number is already typed
+                update(
+                  values.phone
+                    ? { country: code }
+                    : { country: code, phoneCountry: code as CountryCode },
+                  ["country"],
+                );
+              }}
+            >
+              <option value="" disabled>
+                Select country
+              </option>
+              {countries.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {err("country")}
+          </div>
+        </div>
+        <div className="form__row">
+          <div className="field">
+            {label("representativeName", "Representative Name")}
+            <input
+              {...field("representativeName")}
+              type="text"
+              autoComplete="name"
+              required
+              value={values.representativeName}
+              onChange={(e) => set("representativeName", e.target.value)}
+            />
+            {err("representativeName")}
+          </div>
+          <div className="field">
+            {label("email", "Email Address")}
+            <input
+              {...field("email")}
+              type="email"
+              autoComplete="email"
+              required
+              value={values.email}
+              onChange={(e) => set("email", e.target.value)}
+            />
+            {err("email")}
+          </div>
+        </div>
+        <div className="form__row">
+          <div className="field">
+            {label("phone", "Contact Number")}
+            <PhoneInput
+              {...field("phone")}
+              required
+              placeholder="Phone number"
+              country={values.phoneCountry}
+              onCountryChange={(code) =>
+                update({ phoneCountry: code }, ["phone"])
+              }
+              value={values.phone}
+              onChange={(v) => set("phone", v)}
+              invalid={Boolean(touched.phone && errors.phone)}
+            />
+            {err("phone")}
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Business details">
+        <div className="form__row">
+          <div className="field">
+            {label("businessType", "Business Type")}
+            <select
+              {...field("businessType")}
+              required
+              value={values.businessType}
+              onChange={(e) => set("businessType", e.target.value)}
+            >
+              <option value="" disabled>
+                Select business type
+              </option>
+              {businessTypes.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+            {err("businessType")}
+          </div>
+          <div className="field">
+            {label("systemInUse", "System in Use")}
+            <select
+              {...field("systemInUse")}
+              required
+              value={values.systemInUse}
+              onChange={(e) => set("systemInUse", e.target.value)}
+            >
+              <option value="" disabled>
+                Select system
+              </option>
+              {systemOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            {err("systemInUse")}
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Plan & resources">
+        <div className="form__row">
+          <div className="field">
+            {label("planModel", "Plan Model")}
+            <select
+              {...field("planModel")}
+              required
+              value={values.planModel}
+              onChange={(e) =>
+                // Switching plans starts the resource table fresh
+                update(
+                  {
+                    planModel: e.target.value as PlanModel,
+                    resources: emptyResources,
+                    resourcesNotSure: false,
+                  },
+                  ["planModel", "resources"],
+                )
+              }
+            >
+              <option value="" disabled>
+                Select plan model
+              </option>
+              {planModels.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            {err("planModel")}
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait" initial={false}>
+          {column && (
+            <motion.div
+              key={values.planModel}
+              className="resources"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease }}
+            >
+              <p className="resources__title">
+                Choose Resource <span aria-hidden="true">*</span>
+              </p>
+              <table
+                className={`resources__table ${touched.resources && errors.resources ? "is-invalid" : ""}`}
+              >
+                <thead>
+                  <tr>
+                    <th scope="col">Resource</th>
+                    <th scope="col">{column.heading}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resourceRoles.map((r) => (
+                    <tr
+                      key={r.id}
+                      className={
+                        values.resourcesNotSure ? "is-disabled" : undefined
+                      }
+                    >
+                      <th scope="row">
+                        <label htmlFor={`${uid}-resources-${r.id}`}>
+                          {r.label}
+                        </label>
+                      </th>
+                      <td>
+                        <div className="resources__cell">
+                          <input
+                            id={`${uid}-resources-${r.id}`}
+                            type="number"
+                            inputMode="numeric"
+                            min={0}
+                            max={column.max}
+                            step={1}
+                            placeholder="0"
+                            disabled={values.resourcesNotSure}
+                            aria-describedby={
+                              touched.resources && errors.resources
+                                ? `${uid}-resources-err`
+                                : undefined
+                            }
+                            value={values.resources[r.id]}
+                            onChange={(e) =>
+                              update(
+                                {
+                                  resources: {
+                                    ...values.resources,
+                                    [r.id]: e.target.value,
+                                  },
+                                },
+                                ["resources"],
+                              )
+                            }
+                            onBlur={() => blur("resources")}
+                          />
+                          <span className="resources__unit" aria-hidden="true">
+                            {column.unit}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <th scope="row">
+                      <label htmlFor={`${uid}-resources-notsure`}>
+                        Not Sure
+                      </label>
+                    </th>
+                    <td>
+                      <label className="resources__check">
+                        <input
+                          id={`${uid}-resources-notsure`}
+                          type="checkbox"
+                          checked={values.resourcesNotSure}
+                          onChange={(e) =>
+                            update(
+                              {
+                                resourcesNotSure: e.target.checked,
+                                resources: e.target.checked
+                                  ? emptyResources
+                                  : values.resources,
+                              },
+                              ["resources"],
+                            )
+                          }
+                        />
+                        <span>I’m not sure yet</span>
+                      </label>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              {err("resources")}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Section>
+
+      <Section title="Requirements">
+        <div className="field">
+          {label(
+            "requirements",
+            "Tell us about your business and accounting requirements",
+          )}
+          <textarea
+            {...field("requirements")}
+            rows={7}
+            required
+            value={values.requirements}
+            onChange={(e) => set("requirements", e.target.value)}
+          />
+          <span className="field__count" aria-hidden="true">
+            {values.requirements.length} / 2000
+          </span>
+          {err("requirements")}
+        </div>
+      </Section>
+
+      <div className="quote-form__foot">
+        <button
+          type="submit"
+          className="btn btn--forest btn--lg"
+          disabled={status === "submitting"}
+        >
+          {status === "submitting" ? (
+            <Loader2 className="spin" size={18} aria-hidden="true" />
+          ) : null}
+          <span>
+            {status === "submitting" ? "Submitting…" : "Submit Request"}
+          </span>
+          {status !== "submitting" && (
+            <ArrowRight className="btn__arrow" size={17} aria-hidden="true" />
+          )}
+        </button>
         <p className="form__req">
           <span aria-hidden="true">*</span> Required fields
         </p>
-        <button type="submit" className="btn btn--forest btn--lg" disabled={status === 'submitting'}>
-          {status === 'submitting' ? <Loader2 className="spin" size={18} aria-hidden="true" /> : null}
-          <span>{status === 'submitting' ? 'Sending…' : 'Send Message'}</span>
-          {status !== 'submitting' && <ArrowRight className="btn__arrow" size={17} aria-hidden="true" />}
-        </button>
       </div>
 
       <div aria-live="polite">
         <AnimatePresence>
-          {status === 'error' && (
-            <motion.div className="form-msg form-msg--error" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          {status === "error" && (
+            <motion.div
+              className="form-msg form-msg--error"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
               <AlertCircle size={18} aria-hidden="true" />
-              <p>Sorry, your message could not be sent. Please try again or use WhatsApp or email.</p>
+              <p>
+                Sorry, your request could not be sent. Please try again or use
+                WhatsApp or email.
+              </p>
             </motion.div>
           )}
-          {status === 'unconfigured' && (
-            <motion.div className="form-msg form-msg--pending" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          {status === "unconfigured" && (
+            <motion.div
+              className="form-msg form-msg--pending"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
               <Settings2 size={18} aria-hidden="true" />
               <div>
                 <p>
-                  <strong>Your message has not been sent.</strong> Online form submission isn’t connected yet
-                  {mailto || wa ? ' — you can send the same details directly instead:' : '. Contact details will be added soon.'}
+                  <strong>Your request has not been sent.</strong> Online form
+                  submission isn’t connected yet
+                  {mailto || wa
+                    ? " — you can send the same details directly instead:"
+                    : ". Contact details will be added soon."}
                 </p>
                 {(mailto || wa) && (
                   <div className="form-msg__actions">
@@ -232,7 +675,12 @@ export function ContactForm() {
                       </a>
                     )}
                     {wa && (
-                      <a className="btn btn--outline-dark" href={wa} target="_blank" rel="noopener noreferrer">
+                      <a
+                        className="btn btn--outline-dark"
+                        href={wa}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <MessageCircle size={16} aria-hidden="true" />
                         <span>Send via WhatsApp</span>
                       </a>
@@ -240,7 +688,8 @@ export function ContactForm() {
                   </div>
                 )}
                 <p className="form-msg__dev">
-                  Site owner: set <code>VITE_FORM_ENDPOINT</code> to enable direct submission.
+                  Site owner: set <code>VITE_FORM_ENDPOINT</code> to enable
+                  direct submission.
                 </p>
               </div>
             </motion.div>
@@ -248,5 +697,5 @@ export function ContactForm() {
         </AnimatePresence>
       </div>
     </form>
-  )
+  );
 }

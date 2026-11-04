@@ -273,6 +273,25 @@
   .cred__item:nth-child(-n + 2) {
     border-bottom: 1px solid var(--line);
   }
+  /* 2×2 grid: diagonal pattern — boxes 1 & 4 navy, boxes 2 & 3 white */
+  .cred__item:nth-child(3) {
+    background: transparent;
+  }
+  .cred__item:nth-child(3) .cred__value {
+    color: var(--forest);
+  }
+  .cred__item:nth-child(3) .cred__label {
+    color: var(--text);
+  }
+  .cred__item:nth-child(4) {
+    background: var(--forest);
+  }
+  .cred__item:nth-child(4) .cred__value {
+    color: var(--gold);
+  }
+  .cred__item:nth-child(4) .cred__label {
+    color: var(--ivory);
+  }
 }
 
 /* =====================================================================

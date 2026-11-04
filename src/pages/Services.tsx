@@ -157,7 +157,7 @@ function ServiceShowcase({ active }: { active: number }) {
                 ))}
                 <div className="svc-actions">
                   <ButtonLink to={routes.pricing}>Get a Quote</ButtonLink>
-                  <ButtonLink to={routes.howItWorks} variant="text">
+                  <ButtonLink to={routes.pricing} variant="text">
                     How it works
                   </ButtonLink>
                 </div>

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { MotionConfig } from 'framer-motion'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { SelectionProvider } from './hooks/SelectionContext'
 import { Layout } from './components/layout/Layout'
 import Home from './pages/Home'
@@ -9,7 +9,8 @@ import Home from './pages/Home'
 const About = lazy(() => import('./pages/About'))
 const Services = lazy(() => import('./pages/Services'))
 const Systems = lazy(() => import('./pages/Systems'))
-const HowItWorks = lazy(() => import('./pages/HowItWorks'))
+// Old How It Works page is temporarily disabled (src/pages/HowItWorks.tsx is kept for later use).
+// To restore it: re-add `const HowItWorks = lazy(() => import('./pages/HowItWorks'))` and its route below.
 const Pricing = lazy(() => import('./pages/Pricing'))
 const BookMeeting = lazy(() => import('./pages/BookMeeting'))
 const Contact = lazy(() => import('./pages/Contact'))
@@ -27,7 +28,7 @@ export default function App() {
             <Route path="about" element={page(<About />)} />
             <Route path="services" element={page(<Services />)} />
             <Route path="systems" element={page(<Systems />)} />
-            <Route path="how-it-works" element={page(<HowItWorks />)} />
+            <Route path="how-it-works" element={<Navigate to="/pricing" replace />} />
             <Route path="pricing" element={page(<Pricing />)} />
             <Route path="book-a-meeting" element={page(<BookMeeting />)} />
             <Route path="contact" element={page(<Contact />)} />

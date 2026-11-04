@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowUp, CalendarDays, Mail, MessageCircle } from 'lucide-react'
 import { brand, hero, nav, routes, services } from '../../content/site'
 import { emailHref, whatsappHref } from '../../content/links'
@@ -7,6 +7,9 @@ import { Logo } from './Logo'
 export function Footer() {
   const wa = whatsappHref({ plan: null, tier: null })
   const mail = emailHref({ plan: null, tier: null })
+  // "Book a Meeting" is not shown on these pages
+  const { pathname } = useLocation()
+  const isHome = pathname === routes.home || pathname === routes.pricing
 
   return (
     <footer className="footer">
@@ -24,9 +27,11 @@ export function Footer() {
               <Link to={routes.pricing} className="btn btn--gold">
                 <span>Get a Quote</span>
               </Link>
-              <Link to={routes.meeting} className="btn btn--ghost-light">
-                <span>Book a Meeting</span>
-              </Link>
+              {!isHome && (
+                <Link to={routes.meeting} className="btn btn--ghost-light">
+                  <span>Book a Meeting</span>
+                </Link>
+              )}
             </div>
             <div className="footer__experience">
               <span className="footer__figure">

@@ -41,16 +41,17 @@ export const images = {
   aboutOffice: '/images/about-office.webp',
   aboutExecutive: '/images/about-executive.webp',
   aboutTeam: '/images/about-team.webp',
-  introMeeting: '/images/intro-meeting.webp',
+  introWorkspace: '/images/intro-workspace.webp',
   homeAnalysis: '/images/home-analysis.webp',
   whyCollaboration: '/images/why-collaboration.webp',
-  systemsTech: '/images/systems-tech.webp',
+  systemsInfrastructure: '/images/systems-infrastructure.webp',
   systemsWorkspace: '/images/systems-workspace.webp',
   processDiscussion: '/images/process-discussion.webp',
-  pricingDesk: '/images/pricing-desk.webp',
+  hiwDashboard: '/images/hiw-dashboard.webp',
   meetingHandshake: '/images/meeting-handshake.webp',
   contactOffice: '/images/contact-office.webp',
   ctaSkyline: '/images/cta-skyline.webp',
+  aboutReporting: '/images/about-reporting.webp',
   svcBookkeeping: '/images/svc-bookkeeping.webp',
   svcReporting: '/images/svc-reporting.webp',
   svcConsultancy: '/images/svc-consultancy.webp',
@@ -76,11 +77,11 @@ export const routes = {
 
 export const nav = [
   { label: 'Home', to: routes.home },
-  { label: 'About', to: routes.about },
+  { label: 'About Us', to: routes.about },
   { label: 'Services', to: routes.services },
-  { label: 'Systems', to: routes.systems },
+  { label: 'Systems We Work With', to: routes.systems },
   { label: 'How It Works', to: routes.pricing },
-  { label: 'Contact', to: routes.contact },
+  { label: 'Contact Us', to: routes.contact },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -101,11 +102,10 @@ export const hero = {
 
 /** Homepage hero — Webs Site Content V2.docx, "Home Page" › Top Line & Section 1. */
 export const homeHero = {
-  topLine: 'Next Is Now',
   headline: 'Bookkeeping & Financial Consulting',
   description: [
     'Klarus & Co. is a professional bookkeeping and financial consulting firm delivering tailored solutions designed around each client’s unique needs.',
-    'We help businesses cut costs, boost efficiency, and leverage expert guidance to strengthen profitability and long-term sustainability.',
+    'We help businesses maintain accurate bookkeeping and financial reporting, control costs, improve efficiency, and gain financial insights to strengthen profitability and long-term sustainability.',
   ],
 }
 
@@ -170,26 +170,58 @@ export const whyUs = {
 
 export const about = {
   eyebrow: 'About Us',
+  /** Homepage "About Klarus & Co." section — Webs Site Content V2.docx, Section 4 of page 1. */
+  intro:
+    'Klarus & Co. is built on a professional identity shaped by four key strengths: the experience we bring, the value we deliver, the solutions we offer, and the approach we take. Together, these define our commitment to providing professional, reliable, and cost-effective financial services to our clients.',
   themes: [
     {
       label: 'Experience',
       title: '20+ Years of Professional Experience',
-      body: 'With over 20 years of experience, we bring extensive knowledge and practical expertise in bookkeeping, accounting, and financial management. We provide accurate, reliable solutions tailored to each client’s needs.',
+      body: 'With over two decades of professional experience in bookkeeping, accounting, and financial management, we bring practical knowledge, professional expertise, and sound financial judgment to help businesses manage their financial operations effectively.',
     },
     {
       label: 'Value',
-      title: 'Reliable Bookkeeping at a Lower Cost',
-      body: 'Our efficient approach helps businesses reduce bookkeeping costs while maintaining accuracy and quality. We handle essential accounting tasks so you can focus on your core business and growth.',
+      title: 'Professional Services at a Lower Cost',
+      body: 'We deliver professional accounting and financial support without the overhead of maintaining an in-house team. Our flexible service model gives businesses access to experienced professionals while reducing operating expenses and making better use of their resources.',
     },
     {
       label: 'Solutions',
-      title: 'Bookkeeping & Accounting Solutions That Fit Your Business',
-      body: 'We provide bookkeeping, financial reporting, management accounts, budgeting, forecasting, and cost control. Our services can be tailored to your needs and scaled as your business grows.',
+      title: 'Bookkeeping & Comprehensive Financial Services',
+      body: 'From day-to-day bookkeeping to financial reporting, budgeting, cost management, and consultancy, we offer a range of services designed to address your business’s financial and operational needs.',
     },
     {
       label: 'Approach',
       title: 'Professional, Flexible & Technology-Driven',
-      body: 'We combine professional expertise with modern accounting systems and technology to keep financial records accurate and up to date. Our approach adapts to your processes, systems, and business requirements.',
+      body: 'We adapt to your business requirements, systems, and processes, leveraging modern accounting technologies to ensure accurate records, efficient workflows, and timely access to reliable financial information.',
+    },
+  ],
+}
+
+/** About page — "Why Businesses Choose Us" tabs (Webs Site Content V2.docx, Section 2 of page 2). */
+export const aboutWhy = {
+  heading: 'Why Businesses Choose Us',
+  intro:
+    'Choosing the right financial services partner means finding a team that understands your business needs and delivers consistent value. At Klarus & Co., we focus on the qualities that matter most to our clients: quality, reliability, cost efficiency, and the effective use of technology.',
+  items: [
+    {
+      icon: 'quality' as IconKey,
+      title: 'Commitment to Quality',
+      body: 'We are committed to maintaining high professional standards in every assignment, with close attention to accuracy, completeness, and consistency. Our emphasis on quality helps ensure dependable financial records and reporting that businesses can confidently rely on.',
+    },
+    {
+      icon: 'timely' as IconKey,
+      title: 'Timely & Reliable Service',
+      body: 'We recognize that timely financial information is essential for effective business management. We prioritize meeting agreed timelines, maintaining clear communication, and providing consistent support so that clients can depend on us for their ongoing financial requirements.',
+    },
+    {
+      icon: 'cost' as IconKey,
+      title: 'Cost-Effective Support',
+      body: 'We help businesses access professional bookkeeping and financial services without the expense of building and maintaining a full in-house team. Our flexible service arrangements provide access to the right level of expertise while helping businesses control operating costs and allocate resources more efficiently.',
+    },
+    {
+      icon: 'technology' as IconKey,
+      title: 'Technology-Driven Approach',
+      body: 'We make effective use of modern accounting software, ERP platforms, and digital tools to improve the efficiency and organization of financial processes. Our ability to work across different systems and adapt to existing business environments allows us to deliver practical solutions that fit each client’s requirements.',
     },
   ],
 }
@@ -209,17 +241,16 @@ export interface Service {
 
 export const services = {
   eyebrow: 'Our Services',
-  heading: 'Our Accounting & Financial Services',
+  heading: 'Our Bookkeeping & Financial Consulting Services',
   intro:
-    'We provide practical accounting and financial solutions designed to meet the day-to-day and ongoing requirements of your business.',
+    'At Klarus & Co., we offer a range of professional bookkeeping, accounting, and financial consulting services designed to support businesses at every stage of business growth. Our solutions are tailored to individual client needs, helping businesses maintain financial control, improve operational efficiency, and make informed decisions.',
   items: [
     {
       icon: 'bookkeeping' as IconKey,
       title: 'Bookkeeping',
-      badge: 'Our Core Service',
       body: [
-        'Professional day-to-day bookkeeping support to keep your financial records accurate, organized, and up to date.',
-        'Whether you need occasional assistance or ongoing bookkeeping support, we provide flexible solutions based on your business requirements.',
+        'Professional day-to-day bookkeeping support to keep your financial records accurate, organized, and up to date. We handle routine financial transactions, maintain ledgers, reconcile accounts, and help ensure your books are properly maintained.',
+        'Whether you need occasional assistance or ongoing bookkeeping support, we provide flexible solutions tailored to your business requirements.',
       ],
       image: images.svcBookkeeping,
     },
@@ -227,7 +258,8 @@ export const services = {
       icon: 'reporting' as IconKey,
       title: 'Financial Reporting',
       body: [
-        'Clear and timely financial reporting that provides management with reliable information about business performance and financial position.',
+        'Clear, accurate, and timely financial reporting that provides management with reliable information about business performance and financial position. We prepare meaningful financial statements and management reports to help businesses understand their results and monitor financial health.',
+        'Our reporting solutions help management identify trends, assess performance, and make better-informed business decisions.',
       ],
       image: images.svcReporting,
     },
@@ -235,7 +267,8 @@ export const services = {
       icon: 'consultancy' as IconKey,
       title: 'Management Consultancy',
       body: [
-        'Practical financial and management support to help businesses analyze financial information, understand performance, and make informed decisions.',
+        'Practical financial and management consultancy to help businesses analyze financial information, evaluate operational performance, and identify opportunities for improvement. We provide insights and recommendations to support better resource allocation, stronger financial management, and improved business performance.',
+        'Our approach focuses on practical solutions that address business challenges and support sustainable growth.',
       ],
       image: images.svcConsultancy,
     },
@@ -243,7 +276,8 @@ export const services = {
       icon: 'budgeting' as IconKey,
       title: 'Budgeting & Forecasting',
       body: [
-        'Support with financial planning, budgeting, forecasting, and monitoring actual performance against expectations.',
+        'Professional support with financial planning, budgeting, forecasting, and monitoring actual performance against expectations. We help businesses develop realistic budgets, anticipate financial requirements, and establish effective financial targets.',
+        'Regular budget monitoring and variance analysis enable management to identify deviations, take corrective action, and maintain better financial control.',
       ],
       image: images.svcBudgeting,
     },
@@ -251,7 +285,8 @@ export const services = {
       icon: 'costControl' as IconKey,
       title: 'Cost Control',
       body: [
-        'Analysis and monitoring of business costs to improve visibility over expenditure and support effective cost management.',
+        'Systematic analysis and monitoring of business costs to improve visibility over expenditure and support effective cost management. We help identify cost drivers, evaluate spending patterns, and highlight opportunities to reduce unnecessary expenses without compromising operational efficiency.',
+        'Our cost management support helps businesses improve resource utilization, protect margins, and strengthen overall profitability.',
       ],
       image: images.svcCost,
     },
@@ -259,7 +294,8 @@ export const services = {
       icon: 'actuarial' as IconKey,
       title: 'Actuarial Valuation',
       body: [
-        'Professional actuarial valuation support for applicable financial, accounting, and business requirements.',
+        'Professional actuarial valuation services to support businesses in meeting applicable financial reporting and accounting requirements. We provide actuarial assessment and valuation support for employee benefit obligations and other relevant long-term financial commitments.',
+        'Our services help businesses obtain reliable valuation information for financial statements, reporting purposes, and informed financial planning.',
       ],
       image: images.svcActuarial,
     },
@@ -273,13 +309,13 @@ export const services = {
 export const systems = {
   eyebrow: 'Systems We Work With',
   heading: 'Systems We Work With',
-  items: ['Oracle', 'SAP', 'QuickBooks', 'Odoo', 'Xero', 'Sage', 'Zoho Books', 'Microsoft Dynamics'],
-  /** Supporting line taken from the "Technology-Driven Approach" benefit. */
+  items: ['Oracle', 'SAP', 'Microsoft Dynamics', 'QuickBooks', 'Odoo', 'Xero', 'Zoho Books', 'Sage'],
+  /** Webs Site Content V2.docx, Page 3. */
   intro:
-    'We work with leading accounting and ERP systems and use modern tools and techniques to improve efficiency, organization, and accessibility of financial information. We can also adapt to the systems and processes already used by your business.',
+    'We work with leading accounting software and ERP systems, leveraging modern tools and technologies to improve efficiency, streamline financial processes, and ensure organized and accessible financial information. We adapt to the systems and processes already used by your business, providing solutions that fit your operational requirements.',
   custom: {
     title: 'Customized Solutions',
-    body: 'Where your requirements extend beyond standard accounting systems, we can also support customized development and solutions designed around your specific business processes.',
+    body: 'Where standard accounting software or existing ERP solutions do not fully address your business requirements, we can develop customized systems and solutions designed around your specific business processes, operational needs, and reporting requirements.',
   },
   disclaimer:
     'Product names are trademarks of their respective owners and are listed to indicate the systems we work with. No partnership or endorsement is implied.',
@@ -310,6 +346,43 @@ export const howItWorks = {
       body: 'We agree on the scope of work, assign the appropriate professional, and begin supporting your business.',
     },
   ],
+}
+
+/** How It Works page (route /pricing) — Webs Site Content V2.docx, Page 4. */
+export const howItWorksPage = {
+  heading: 'How It Works',
+  subheading: 'Plans That Fits Your Business Needs',
+  intro: [
+    'Every business has different accounting and financial management requirements. To provide flexibility and ensure you only pay for the level of support you need, we offer two simple engagement options.',
+    'Whether you need occasional accounting support or a dedicated professional managing your financial activities on an ongoing basis, you can choose the plan that best suits your business.',
+  ],
+  step1: {
+    label: 'Step 1',
+    title: 'Tell Us About Your Business',
+    body: 'Share some basic information about your business, industry, existing accounting systems, and financial support requirements. This helps us understand your operations and identify where our services can add value.',
+  },
+  step2: {
+    label: 'Step 2',
+    title: 'Select Your Support Model',
+    body: 'Choose the support model that best suits your business.',
+    plans: [
+      {
+        id: 'monthly' as PlanId,
+        name: 'Monthly Fixed Plan',
+        body: 'Our Monthly Fixed Plan provides an assigned professional working 5 days a week, 8 hours a day, delivering ongoing accounting and financial support at a predictable monthly cost.',
+      },
+      {
+        id: 'hourly' as PlanId,
+        name: 'Hourly Based Plan',
+        body: 'Our Hourly Based Plan provides flexible access to professional accounting and financial support based on the actual hours required. You pay only for the time utilized, making it an ideal option for businesses requiring occasional assistance, specific assignments, or support for varying workloads.',
+      },
+    ],
+  },
+  step3: {
+    label: 'Step 3',
+    title: 'Select Your Accounting Professional',
+    body: 'Select the accounting professional whose level of expertise and experience best matches your accounting and financial management requirements.',
+  },
 }
 
 /* ------------------------------------------------------------------ */

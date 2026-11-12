@@ -252,6 +252,16 @@
   color: var(--forest);
   font-variant-numeric: lining-nums tabular-nums;
 }
+/* Icon occupies the same 1em-high slot the number used, so box heights are unchanged */
+.cred__icon {
+  display: flex;
+  align-items: center;
+  height: 1em;
+}
+.cred__icon svg {
+  width: 0.78em;
+  height: 0.78em;
+}
 .cred__label {
   font-size: 15px;
   font-weight: 600;
@@ -352,6 +362,10 @@
 }
 .intro__copy .lead {
   margin-top: 28px;
+}
+/* No heading between the eyebrow and the lead: keep the eyebrow's own spacing only */
+.intro__copy .eyebrow + div > .lead {
+  margin-top: 0;
 }
 .intro__copy > div > p:not(.lead) {
   margin-top: 16px;

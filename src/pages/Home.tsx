@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { animate, motion, useInView, useScroll, useTransform } from 'framer-motion'
-import { ArrowUpRight, Check, MoveDown } from 'lucide-react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowUpRight, Check, Coins, MoveDown, ShieldCheck, SlidersHorizontal, Users } from 'lucide-react'
 import { about, hero, homeHero, images, routes, services } from '../content/site'
 import { icons } from '../components/icons'
 import { ease, inView, stagger } from '../components/motion'
@@ -35,15 +35,6 @@ function HomeHero() {
 
       <motion.div className="container hero__inner" style={{ y: copyY, opacity: copyOpacity }}>
         <div className="hero__copy">
-          <motion.p
-            className="hero__kicker"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease, delay: 0.3 }}
-          >
-            <span className="hero__kicker-line" aria-hidden="true" />
-            {homeHero.topLine}
-          </motion.p>
           <TextReveal as="h1" id="hero-title" immediate delay={0.5} className="hero__title" text={homeHero.headline} />
           <motion.div
             className="hero__body"
@@ -113,29 +104,12 @@ function HomeHero() {
 /* Credibility strip                                                   */
 /* ------------------------------------------------------------------ */
 
-function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  const isInView = useInView(ref, { once: true })
-  const [value, setValue] = useState(0)
-  useEffect(() => {
-    if (!isInView) return
-    const controls = animate(0, to, { duration: 1.8, ease, onUpdate: (v) => setValue(Math.round(v)) })
-    return () => controls.stop()
-  }, [isInView, to])
-  return (
-    <span ref={ref}>
-      {value}
-      {suffix}
-    </span>
-  )
-}
-
-// The four hooks, numbered in sequence.
+// The four hooks, each with a matching icon.
 const credibility = [
-  { value: 1, label: 'Professional Team' },
-  { value: 2, label: 'Lower Costs' },
-  { value: 3, label: 'Flexible Plans' },
-  { value: 4, label: 'Peace of Mind' },
+  { icon: Users, label: 'Professional Team' },
+  { icon: Coins, label: 'Lower Costs' },
+  { icon: SlidersHorizontal, label: 'Flexible Plans' },
+  { icon: ShieldCheck, label: 'Peace of Mind' },
 ]
 
 function Credibility() {
@@ -144,8 +118,8 @@ function Credibility() {
       <motion.div className="container cred__inner" initial="hidden" whileInView="show" viewport={inView} variants={stagger.container}>
         {credibility.map((c) => (
           <motion.div key={c.label} className="cred__item" variants={stagger.item}>
-            <span className="cred__value">
-              <CountUp to={c.value} />
+            <span className="cred__value cred__icon" aria-hidden="true">
+              <c.icon strokeWidth={1.4} />
             </span>
             <span className="cred__label">{c.label}</span>
           </motion.div>
@@ -160,12 +134,12 @@ function Credibility() {
 /* ------------------------------------------------------------------ */
 
 function Intro() {
-  const [experience, value] = about.themes
+  const value = about.themes[1]
   return (
     <section className="intro section">
       <div className="container intro__grid">
         <div className="intro__media">
-          <MaskImage src={images.introMeeting} alt="Two professionals reviewing financial matters at a meeting table" className="intro__img-main" />
+          <MaskImage src={images.introWorkspace} alt="Laptop displaying financial analysis charts and reports" className="intro__img-main" />
           <MaskImage src={images.homeAnalysis} alt="Financial reports and charts on a desk" className="intro__img-inset" direction="left" delay={0.3} />
           <Reveal className="intro__badge" delay={0.5}>
             <span className="intro__badge-num">
@@ -177,9 +151,8 @@ function Intro() {
 
         <div className="intro__copy">
           <Eyebrow tone="forest">About Klarus &amp; Co</Eyebrow>
-          <TextReveal className="display-2" text={experience.title} />
           <Reveal delay={0.15}>
-            <p className="lead">{experience.body}</p>
+            <p className="lead">{about.intro}</p>
             <p>{hero.body}</p>
           </Reveal>
           <Reveal delay={0.25} className="intro__value">
@@ -233,15 +206,11 @@ function ServicesPreview() {
                     onMouseEnter={() => setActive(i)}
                     onFocus={() => setActive(i)}
                   >
-                    <span className="svc-row__num">{String(i + 1).padStart(2, '0')}</span>
                     <span className="svc-row__icon">
                       <Icon size={22} strokeWidth={1.4} aria-hidden="true" />
                     </span>
                     <span className="svc-row__text">
-                      <span className="svc-row__title">
-                        {s.title}
-                        {s.badge && <em className="svc-row__badge">{s.badge}</em>}
-                      </span>
+                      <span className="svc-row__title">{s.title}</span>
                       <span className="svc-row__desc">{s.body[0]}</span>
                     </span>
                     <ArrowUpRight className="svc-row__arrow" size={22} aria-hidden="true" />
@@ -265,7 +234,6 @@ function ServicesPreview() {
               </motion.div>
             ))}
             <div className="svc-index__caption">
-              <span>{String(active + 1).padStart(2, '0')} / 06</span>
               <strong>{current.title}</strong>
             </div>
           </div>

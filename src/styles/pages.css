@@ -84,7 +84,7 @@
 .svc-row {
   position: relative;
   display: grid;
-  grid-template-columns: 44px 48px 1fr 28px;
+  grid-template-columns: 48px 1fr 28px;
   align-items: center;
   gap: 18px;
   padding: 26px 8px;
@@ -233,7 +233,7 @@
 }
 @media (max-width: 560px) {
   .svc-row {
-    grid-template-columns: 36px 1fr 22px;
+    grid-template-columns: minmax(0, 1fr) 22px;
     gap: 14px;
   }
   .svc-row__icon {
@@ -244,6 +244,20 @@
 .themes__head {
   max-width: 760px;
   margin-bottom: clamp(40px, 5vw, 64px);
+}
+.themes__intro {
+  margin-top: 24px;
+}
+/* About: "Why Businesses Choose Us" — same tabbed layout as the section above, on a soft-blue band */
+.themes + .themes--why {
+  /* the section above already ends with its own bottom padding: halve the top padding here */
+  padding-top: calc(var(--section-y) * 0.6);
+}
+.themes--why {
+  background: #e8f0ff;
+}
+.themes + .themes {
+  margin-top: 0;
 }
 .themes__body {
   display: grid;
@@ -263,7 +277,7 @@
   gap: 16px;
   padding: 18px 44px 18px 24px;
   text-align: left;
-  color: var(--muted);
+  color: #8fb3f3;
   background: var(--white);
   border: 1px solid var(--line);
   box-shadow: 0 1px 0 rgba(17, 40, 104, 0.04);
@@ -666,7 +680,6 @@
   /* white tile (default) */
   --tile-bg: transparent;
   --tile-fg: var(--charcoal);
-  --tile-idx: var(--gold-text);
   position: relative;
   background: var(--tile-bg);
   display: flex;
@@ -686,16 +699,6 @@
 .sys-wall__item:nth-child(8n + 8) {
   --tile-bg: var(--forest);
   --tile-fg: var(--white);
-  --tile-idx: var(--gold);
-}
-.sys-wall__index {
-  position: absolute;
-  top: 22px;
-  left: 24px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  color: var(--tile-idx);
 }
 /* Logo on top, centred, with the name directly beneath */
 .sys-wall__brand {
@@ -734,23 +737,17 @@
   }
   .sys-wall__item {
     min-height: 200px;
-    padding: 40px 16px 24px;
+    padding: 24px 16px;
   }
   /* Two columns: each row of two alternates — boxes 1 & 4 navy, 2 & 3 white (pattern repeats every four) */
   .sys-wall__item:nth-child(n) {
     --tile-bg: transparent;
     --tile-fg: var(--charcoal);
-    --tile-idx: var(--gold-text);
   }
   .sys-wall__item:nth-child(4n + 1),
   .sys-wall__item:nth-child(4n + 4) {
     --tile-bg: var(--forest);
     --tile-fg: var(--white);
-    --tile-idx: var(--gold);
-  }
-  .sys-wall__index {
-    top: 16px;
-    left: 16px;
   }
 }
 @media (max-width: 560px) {
@@ -1148,6 +1145,18 @@
   }
 }
 
+.price-banner__sub {
+  max-width: 18ch;
+  margin: -8px 0 26px;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 1.4rem + 1.4vw, 2.8rem);
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--forest);
+}
+
+
+/* ---- How It Works: Step 2 (original design) ---- */
 .chooser-section__head {
   margin-bottom: 36px;
 }
@@ -1236,6 +1245,67 @@
   }
 }
 
+
+/* ---- Step 3 + closing: unchanged design (previous version) ---- */
+/* ---- How It Works: shared step header ---- */
+.hiw-step__head {
+  max-width: 620px;
+}
+.hiw-step__marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.hiw-step__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  color: var(--white);
+  background: var(--forest);
+}
+.hiw-step__label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.hiw-step__head .display-2 {
+  margin-bottom: 18px;
+  color: var(--forest);
+}
+.hiw-step__head .lead {
+  max-width: 560px;
+}
+.hiw-step__head--light .hiw-step__icon {
+  color: var(--forest-deep);
+  background: var(--gold);
+}
+.hiw-step__head--light .hiw-step__label {
+  color: var(--gold);
+}
+.hiw-step__head--light .display-2 {
+  color: var(--ivory);
+}
+.hiw-step__head--light .lead {
+  color: var(--ivory-soft);
+}
+.hiw-step {
+  padding-block: clamp(64px, 7vw, 104px);
+}
+
+/* Step 3: header + plan switch on one row */
+.hiw-step__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 28px 40px;
+  margin-bottom: clamp(36px, 4vw, 56px);
+}
 .ledger {
   overflow: hidden;
   color: var(--ivory-soft);
@@ -1250,14 +1320,6 @@
 }
 .ledger .container {
   position: relative;
-}
-.ledger__switch-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 56px;
 }
 .seg {
   display: inline-flex;
@@ -1285,16 +1347,6 @@
 }
 .seg__label {
   position: relative;
-}
-.ledger__intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  gap: 40px 80px;
-  align-items: end;
-  margin-bottom: 56px;
-}
-.ledger__intro .display-2 {
-  margin-bottom: 22px;
 }
 .ledger__rows {
   border-top: 1px solid var(--line-light);
@@ -1368,74 +1420,6 @@
   margin-top: clamp(36px, 4vw, 52px);
 }
 
-.week {
-  padding: 24px;
-  border: 1px solid var(--line-light);
-  background: rgba(255, 255, 255, 0.03);
-}
-.week {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-}
-.week__day {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.week__label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ivory-soft);
-}
-.week__hours {
-  display: grid;
-  gap: 4px;
-}
-.week__hours span {
-  height: 9px;
-  background: var(--gold);
-  opacity: 0.85;
-  transform-origin: top;
-}
-.week__legend {
-  grid-column: 1 / -1;
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--ivory);
-}
-.week__legend strong {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  color: var(--gold);
-}
-.week__legend span {
-  margin: 0 8px;
-  color: var(--gold);
-}
-.hours {
-  padding: 24px;
-  border: 1px solid var(--line-light);
-  background: rgba(255, 255, 255, 0.03);
-}
-.hours__bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 110px;
-}
-.hours__bars span {
-  flex: 1;
-  background: var(--gold);
-  transform-origin: bottom;
-}
-.hours__legend {
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--ivory);
-}
 @media (max-width: 1100px) {
   .ledger__row {
     grid-template-columns: 1fr 1fr;
@@ -1443,11 +1427,6 @@
   }
   .ledger__body {
     grid-column: 1 / -1;
-  }
-}
-@media (max-width: 860px) {
-  .ledger__intro {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 560px) {
@@ -1483,6 +1462,101 @@
   .unsure__inner {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+
+/* ---- How It Works: compact spacing + distinct Step 1 / Step 2 (Step 3 and closing untouched) ---- */
+.price-banner {
+  padding: calc(var(--header-h) + clamp(36px, 4.5vw, 64px)) 0 clamp(32px, 3.5vw, 48px);
+}
+.price-banner__img {
+  aspect-ratio: 1 / 1.08;
+}
+
+.hiw-step--one {
+  padding-bottom: clamp(44px, 4.5vw, 60px);
+}
+.hiw-step--one .display-2 {
+  font-size: clamp(2.1rem, 1.5rem + 1.7vw, 3.15rem);
+  line-height: 1.06;
+}
+.hiw-step--one .hiw-step__marker {
+  margin-bottom: 16px;
+}
+.hiw-step--one .hiw-step__icon {
+  width: 40px;
+  height: 40px;
+}
+
+/* Step 1 — white; heading left, description right, framed by a hairline with a navy accent */
+.hiw-step--one {
+  padding-top: clamp(36px, 4vw, 56px);
+  background: #f2f6fd;
+  /* clear boundaries: hairline above, light-blue rule below where white Step 2 begins */
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid rgba(143, 179, 243, 0.6);
+}
+.hiw-step--one .hiw-step__head {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: clamp(40px, 6vw, 96px);
+  align-items: end;
+  max-width: none;
+  padding-top: clamp(24px, 2.6vw, 34px);
+  border-top: 1px solid var(--line-strong);
+}
+.hiw-step--one .hiw-step__head::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 72px;
+  height: 3px;
+  background: var(--forest);
+}
+.hiw-step--one .hiw-step__marker {
+  grid-column: 1;
+  grid-row: 1;
+}
+.hiw-step--one .display-2 {
+  grid-column: 1;
+  grid-row: 2;
+  margin-bottom: 0;
+}
+.hiw-step--one .lead {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: end;
+  max-width: 560px;
+  padding-left: 28px;
+  border-left: 2px solid var(--gold);
+}
+
+@media (max-width: 900px) {
+  .hiw-step--one .hiw-step__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hiw-step--one .display-2 {
+    margin-bottom: 18px;
+  }
+  .hiw-step--one .lead {
+    grid-column: 1;
+    grid-row: 3;
+    padding-left: 20px;
+  }
+}
+
+/* ---- How It Works: Step 2 on white, tighter top spacing; Hourly card navy #172F70 ---- */
+.chooser-section {
+  padding-block: clamp(48px, 5vw, 72px) clamp(64px, 7vw, 100px);
+  background: var(--white);
+}
+.chooser-section .chooser__opt--hourly {
+  background: #172f70;
+}
+.chooser-section .chooser__opt--monthly {
+  background: var(--white);
 }
 
 /* =====================================================================

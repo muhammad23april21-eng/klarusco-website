@@ -12,22 +12,21 @@ import { usePageTitle } from '../hooks/usePageTitle'
 
 /** Descriptive alt text for each service photo (kept from the previous per-service sections). */
 const imageAlt: Record<string, string> = {
-  bookkeeping: 'Calculator, pen and financial paperwork on a desk',
-  'financial-reporting': 'Laptop displaying financial charts',
-  'management-consultancy': 'Team meeting around a conference table',
-  'budgeting-and-forecasting': 'Hand-drawn growth chart with ruler and pens',
-  'cost-control': 'Calculator and financial documents',
-  'actuarial-valuation': 'Professional reviewing and signing documents',
+  bookkeeping: 'Accounting documents, calculator and notes on a desk',
+  'financial-reporting': 'Financial reporting dashboard with performance charts',
+  'management-consultancy': 'Planning notes laid out on a desk beside a keyboard',
+  'budgeting-and-forecasting': 'Hand-drawn financial projection chart with ruler and pens',
+  'cost-control': 'Financial forms and expense documents with a pen',
+  'actuarial-valuation': 'Statistical charts and analytical data on a laptop screen',
 }
 
-function ServiceHead({ s, index, tone = 'dark' }: { s: Service; index: number; tone?: 'dark' | 'light' }) {
+function ServiceHead({ s, tone = 'dark' }: { s: Service; tone?: 'dark' | 'light' }) {
   const Icon = icons[s.icon]
   return (
     <div className={`svc-head svc-head--${tone}`}>
       <span className="svc-head__icon">
         <Icon size={24} strokeWidth={1.4} aria-hidden="true" />
       </span>
-      <span className="svc-head__num">Service {String(index + 1).padStart(2, '0')}</span>
     </div>
   )
 }
@@ -98,7 +97,6 @@ function ServiceNav({ active, onSelect }: { active: number; onSelect: (i: number
               }
             }}
           >
-            <span>{String(i + 1).padStart(2, '0')}</span>
             {s.title}
           </a>
         ))}
@@ -110,7 +108,6 @@ function ServiceNav({ active, onSelect }: { active: number; onSelect: (i: number
 /** Single main services section: shows the service selected in the navbar (Bookkeeping by default). */
 function ServiceShowcase({ active }: { active: number }) {
   const s = services.items[active]
-  const total = String(services.items.length).padStart(2, '0')
   return (
     <section id="services-showcase" className="section section--ivory svc-explorer" aria-label={services.eyebrow}>
       {/* Anchors for /services#<slug> links (e.g. from the footer): the layout scrolls here */}
@@ -137,9 +134,6 @@ function ServiceShowcase({ active }: { active: number }) {
                 <motion.div className="svc-explorer__img-inner" initial={{ scale: 1.12 }} animate={{ scale: 1 }} transition={{ duration: 1.4, ease }}>
                   <Img src={s.image} alt={imageAlt[s.slug] ?? ''} />
                 </motion.div>
-                <figcaption className="svc-explorer__caption" aria-hidden="true">
-                  {String(active + 1).padStart(2, '0')} / {total}
-                </figcaption>
               </motion.figure>
               <motion.div
                 className="svc-explorer__text"
@@ -147,8 +141,7 @@ function ServiceShowcase({ active }: { active: number }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease, delay: 0.15 }}
               >
-                <ServiceHead s={s} index={active} />
-                {s.badge && <span className="badge-gold">{s.badge}</span>}
+                <ServiceHead s={s} />
                 <h2 className="display-2">{s.title}</h2>
                 {s.body.map((p, i) => (
                   <p key={p} className={i === 0 ? 'lead' : undefined}>

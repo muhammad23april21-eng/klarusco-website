@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, CalendarDays, Menu, X } from 'lucide-react'
-import { brand, hero, nav, routes } from '../../content/site'
+import { hero, nav, routes } from '../../content/site'
 import { ease } from '../motion'
 import { Logo } from './Logo'
 
@@ -45,10 +45,6 @@ export function Header() {
     <header className={`header header--${tone} ${solid ? 'is-solid' : ''}`}>
       <div className={`topbar ${scrolled ? 'is-hidden' : ''}`}>
         <div className="container topbar__inner">
-          <span className="topbar__note">
-            <span className="topbar__rule" aria-hidden="true" />
-            {brand.descriptor}
-          </span>
           <span className="topbar__links">
             <span>{hero.tagline.join(' ')}</span>
           </span>

@@ -1,55 +1,82 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { about, hero, images } from '../content/site'
+import { about, aboutWhy, hero, images } from '../content/site'
 import { ease } from '../components/motion'
 import { PageBanner } from '../components/sections/PageBanner'
 import { Img } from '../components/ui/Img'
 import { Eyebrow, MaskImage, Reveal, TextReveal } from '../components/ui/Reveal'
 import { usePageTitle } from '../hooks/usePageTitle'
 
-const themeImages = [images.aboutTeam, images.homeAnalysis, images.svcReporting, images.systemsWorkspace]
+const themeImages = [images.aboutTeam, images.homeAnalysis, images.aboutReporting, images.systemsWorkspace]
 
-function ThemesExplorer() {
+const whyImages = [images.svcBookkeeping, images.svcBudgeting, images.svcCost, images.svcActuarial]
+const whyItems = aboutWhy.items.map((item) => ({ label: item.title, title: item.title, body: item.body }))
+
+interface ExplorerItem {
+  label: string
+  title: string
+  body: string
+}
+
+interface ExplorerProps {
+  id: string
+  eyebrow?: string
+  heading: string
+  intro?: string
+  items: ExplorerItem[]
+  itemImages: string[]
+  /** Small label above each panel title; defaults to the tab label. */
+  panelLabel?: string
+  tablistLabel: string
+  className?: string
+}
+
+/** Interactive tabbed section (left tabs, right image + text panel). */
+function ThemesExplorer({ id, eyebrow, heading, intro, items, itemImages, panelLabel, tablistLabel, className = '' }: ExplorerProps) {
   const [active, setActive] = useState(0)
-  const theme = about.themes[active]
+  const theme = items[active]
   return (
-    <section className="section section--ivory themes" aria-labelledby="themes-title">
+    <section className={`section section--ivory themes ${className}`} aria-labelledby={`${id}-title`}>
       <div className="container">
         <div className="themes__head">
-          <Eyebrow tone="forest">What defines us</Eyebrow>
-          <TextReveal id="themes-title" className="display-2" text="Experience, Value, Solutions & Approach" />
+          {eyebrow && <Eyebrow tone="forest">{eyebrow}</Eyebrow>}
+          <TextReveal id={`${id}-title`} className="display-2" text={heading} />
+          {intro && (
+            <Reveal delay={0.15}>
+              <p className="lead themes__intro">{intro}</p>
+            </Reveal>
+          )}
         </div>
 
         <div className="themes__body">
-          <div className="themes__tabs" role="tablist" aria-label="About us themes" aria-orientation="vertical">
-            {about.themes.map((t, i) => (
+          <div className="themes__tabs" role="tablist" aria-label={tablistLabel} aria-orientation="vertical">
+            {items.map((t, i) => (
               <button
                 key={t.label}
                 type="button"
                 role="tab"
-                id={`theme-tab-${i}`}
+                id={`${id}-tab-${i}`}
                 aria-selected={i === active}
-                aria-controls="theme-panel"
+                aria-controls={`${id}-panel`}
                 className={`themes__tab ${i === active ? 'is-active' : ''}`}
                 onClick={() => setActive(i)}
                 onKeyDown={(e) => {
                   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     e.preventDefault()
-                    const next = (i + (e.key === 'ArrowDown' ? 1 : -1) + about.themes.length) % about.themes.length
+                    const next = (i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length
                     setActive(next)
-                    document.getElementById(`theme-tab-${next}`)?.focus()
+                    document.getElementById(`${id}-tab-${next}`)?.focus()
                   }
                 }}
                 tabIndex={i === active ? 0 : -1}
               >
-                <span className="themes__tab-num">{String(i + 1).padStart(2, '0')}</span>
                 <span className="themes__tab-label">{t.label}</span>
-                {i === active && <motion.span layoutId="theme-indicator" className="themes__indicator" transition={{ duration: 0.5, ease }} />}
+                {i === active && <motion.span layoutId={`${id}-indicator`} className="themes__indicator" transition={{ duration: 0.5, ease }} />}
               </button>
             ))}
           </div>
 
-          <div id="theme-panel" role="tabpanel" aria-labelledby={`theme-tab-${active}`} className="themes__panel">
+          <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${active}`} className="themes__panel">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
@@ -65,7 +92,7 @@ function ThemesExplorer() {
                   animate={{ clipPath: 'inset(0 0 0 0%)' }}
                   transition={{ duration: 0.9, ease }}
                 >
-                  <Img src={themeImages[active]} alt="" />
+                  <Img src={itemImages[active]} alt="" />
                 </motion.div>
                 <motion.div
                   className="themes__text"
@@ -73,7 +100,7 @@ function ThemesExplorer() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, ease, delay: 0.15 }}
                 >
-                  <span className="themes__label">{theme.label}</span>
+                  <span className="themes__label">{panelLabel ?? theme.label}</span>
                   <h3>{theme.title}</h3>
                   <p>{theme.body}</p>
                 </motion.div>
@@ -95,7 +122,6 @@ export default function About() {
         image={images.aboutOffice}
         eyebrow="About Us"
         title="About Klarus & Co"
-        intro={about.themes[0].title}
         layout="center"
         height="medium"
         overlay="charcoal"
@@ -122,7 +148,25 @@ export default function About() {
         </div>
       </section>
 
-      <ThemesExplorer />
+      <ThemesExplorer
+        id="themes"
+        eyebrow="What defines us"
+        heading="Experience, Value, Solutions & Approach"
+        items={about.themes}
+        itemImages={themeImages}
+        tablistLabel="About us themes"
+      />
+
+      <ThemesExplorer
+        id="why"
+        heading={aboutWhy.heading}
+        intro={aboutWhy.intro}
+        items={whyItems}
+        itemImages={whyImages}
+        panelLabel="Why businesses choose us"
+        tablistLabel="Why businesses choose us"
+        className="themes--why"
+      />
     </>
   )
 }

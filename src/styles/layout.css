@@ -176,22 +176,6 @@
   align-items: center;
   gap: 18px;
 }
-.header__meeting {
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ivory);
-  transition: color 0.3s;
-}
-.header__meeting:hover {
-  color: var(--gold);
-}
-.header--dark .header__meeting {
-  color: var(--forest);
-}
 .header__cta {
   min-height: 46px;
   padding: 0 22px;
@@ -246,11 +230,6 @@
   margin-top: 32px;
 }
 
-@media (max-width: 1400px) {
-  .header__meeting {
-    display: none;
-  }
-}
 @media (max-width: 1180px) {
   .nav {
     display: none;

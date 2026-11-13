@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { CalendarDays } from 'lucide-react'
 import { contact, routes } from '../../content/site'
 import { ButtonLink } from '../ui/Button'
 import { Eyebrow, TextReveal, Reveal } from '../ui/Reveal'
@@ -39,9 +38,6 @@ export function CtaBand({
         <Reveal delay={0.3} className="cta-band__actions">
           <ButtonLink to={routes.pricing} size="lg">
             Get a Quote
-          </ButtonLink>
-          <ButtonLink to={routes.meeting} variant="ghost-light" size="lg" arrow={false} icon={<CalendarDays size={18} aria-hidden="true" />}>
-            Book a Meeting
           </ButtonLink>
         </Reveal>
       </div>

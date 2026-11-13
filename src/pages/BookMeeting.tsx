@@ -111,7 +111,7 @@ export default function BookMeeting() {
             </Reveal>
             <Reveal delay={0.2} className="meet__alt">
               <span className="meet__alt-label">Prefer another way?</span>
-              <ContactChannels showMeeting={false} />
+              <ContactChannels />
             </Reveal>
           </aside>
 

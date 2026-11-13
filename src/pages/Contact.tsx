@@ -15,7 +15,7 @@ export default function Contact() {
           <Reveal className="contact__form-wrap contact__form-wrap--centered" delay={0.1}>
             <div className="contact__form-head">
               <h2 id="quote-form-title" className="display-3">
-                Request a Quote
+                Contact Us
               </h2>
               <p>Tell us about your business and accounting requirements. Our team will review your information and get back to you.</p>
             </div>

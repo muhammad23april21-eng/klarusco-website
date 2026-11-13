@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useId, useState, type FormEvent, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -23,6 +23,7 @@ import {
 import { useSelection } from "../../hooks/SelectionContext";
 import { ease } from "../motion";
 import { PhoneInput } from "../ui/PhoneInput";
+import { ContactOptionsModal } from "./ContactOptionsModal";
 
 /* Options from the "Quote Form" spreadsheet */
 const businessTypes = [
@@ -51,8 +52,8 @@ const resourceColumn: Record<
   "hourly" | "monthly",
   { heading: string; unit: string; max: number }
 > = {
-  hourly: { heading: "Number of Resources", unit: "resources", max: 99 },
-  monthly: { heading: "Estimated Hours", unit: "hours", max: 999 },
+  hourly: { heading: "Daily Hours", unit: "hours", max: 24 },
+  monthly: { heading: "Number of Resources", unit: "resources", max: 99 },
 };
 
 interface Values {
@@ -212,6 +213,9 @@ export function ContactForm() {
     {},
   );
   const [status, setStatus] = useState<Status>("idle");
+  // Contact options (WhatsApp / email / meeting) shown after a valid submission
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const closeOptions = useCallback(() => setOptionsOpen(false), []);
 
   const update = (patch: Partial<Values>, keys: FieldKey[]) => {
     const next = { ...values, ...patch };
@@ -253,6 +257,7 @@ export function ContactForm() {
     }
     if (!config.formEndpoint) {
       setStatus("unconfigured");
+      setOptionsOpen(true);
       return;
     }
     setStatus("submitting");
@@ -266,6 +271,7 @@ export function ContactForm() {
         body: JSON.stringify(payload(values)),
       });
       setStatus(res.ok ? "sent" : "error");
+      if (res.ok) setOptionsOpen(true);
     } catch {
       setStatus("error");
     }
@@ -298,8 +304,18 @@ export function ContactForm() {
     </label>
   );
 
+  const optionsModal = (
+    <ContactOptionsModal
+      open={optionsOpen}
+      onClose={closeOptions}
+      summary={text}
+      sent={status === "sent"}
+    />
+  );
+
   if (status === "sent") {
     return (
+      <>
       <motion.div
         className="form-done"
         initial={{ opacity: 0, y: 20 }}
@@ -311,6 +327,8 @@ export function ContactForm() {
         <h3>Thank you — your quote request has been sent.</h3>
         <p>Our team will review your information and get back to you.</p>
       </motion.div>
+      {optionsModal}
+      </>
     );
   }
 
@@ -319,6 +337,7 @@ export function ContactForm() {
     : null;
 
   return (
+    <>
     <form className="form quote-form" onSubmit={onSubmit} noValidate>
       <Section title="Basic information">
         <div className="form__row">
@@ -697,5 +716,7 @@ export function ContactForm() {
         </AnimatePresence>
       </div>
     </form>
+    {optionsModal}
+    </>
   );
 }

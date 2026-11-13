@@ -141,6 +141,7 @@ export default function About() {
             <TextReveal id="statement-title" className="display-2" text={hero.tagline.join(' ')} />
             <Reveal delay={0.15}>
               <p className="lead">{hero.intro}</p>
+              <p className="lead">{about.approach}</p>
               <p>{hero.body}</p>
             </Reveal>
           </div>

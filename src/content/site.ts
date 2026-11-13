@@ -32,6 +32,26 @@ export const config = {
   formEndpoint: (env.VITE_FORM_ENDPOINT as string | undefined)?.trim() || '',
 }
 
+/**
+ * TEMPORARY DUMMY CONTACT DETAILS — used by the contact-options popup shown after the
+ * Contact Us form is submitted, until the real details are provided.
+ * Replace these values (or set VITE_WHATSAPP_NUMBER / VITE_CONTACT_EMAIL / VITE_BOOKING_URL,
+ * which take priority).
+ */
+export const placeholderContact = {
+  whatsappNumber: '15550000000', // dummy (+1 555 000 0000)
+  email: 'contact@example.com', // dummy
+  meetingUrl: 'https://example.com/book-a-meeting', // dummy
+}
+
+/** Contact details used by the post-submission popup: real values when configured, otherwise the dummies above. */
+export const popupContact = {
+  whatsappNumber: config.whatsappNumber || placeholderContact.whatsappNumber,
+  email: config.email || placeholderContact.email,
+  meetingUrl: config.bookingUrl || placeholderContact.meetingUrl,
+  isPlaceholder: !config.whatsappNumber || !config.email || !config.bookingUrl,
+}
+
 /* ------------------------------------------------------------------ */
 /* Imagery (local, optimized WebP from Unsplash — see public/images)   */
 /* ------------------------------------------------------------------ */
@@ -170,6 +190,9 @@ export const whyUs = {
 
 export const about = {
   eyebrow: 'About Us',
+  /** About page "Who we are" — second introductory paragraph. */
+  approach:
+    'Our approach combines practical accounting expertise with a clear understanding of business needs. We focus on accurate financial information, dependable support, and efficient processes that help businesses maintain control of their finances and make informed decisions.',
   /** Homepage "About Klarus & Co." section — Webs Site Content V2.docx, Section 4 of page 1. */
   intro:
     'Klarus & Co. is built on a professional identity shaped by four key strengths: the experience we bring, the value we deliver, the solutions we offer, and the approach we take. Together, these define our commitment to providing professional, reliable, and cost-effective financial services to our clients.',

@@ -1,11 +1,9 @@
-import { Link } from 'react-router-dom'
-import { ArrowUpRight, CalendarDays, Mail, MessageCircle, Settings2 } from 'lucide-react'
-import { routes } from '../../content/site'
+import { ArrowUpRight, Mail, MessageCircle, Settings2 } from 'lucide-react'
 import { emailHref, whatsappHref } from '../../content/links'
 import { useSelection } from '../../hooks/SelectionContext'
 
-/** WhatsApp / email (and optionally meeting) options; unconfigured channels show a clear setup note. */
-export function ContactChannels({ showMeeting = true, tone = 'light' }: { showMeeting?: boolean; tone?: 'light' | 'dark' }) {
+/** WhatsApp / email options; unconfigured channels show a clear setup note. */
+export function ContactChannels({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   const { selection } = useSelection()
   const channels = [
     { key: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, href: whatsappHref(selection), action: 'Chat with us on WhatsApp', env: 'VITE_WHATSAPP_NUMBER' },
@@ -44,20 +42,6 @@ export function ContactChannels({ showMeeting = true, tone = 'light' }: { showMe
           </li>
         )
       })}
-      {showMeeting && (
-        <li>
-          <Link className="channel channel--meeting" to={routes.meeting}>
-            <span className="channel__icon">
-              <CalendarDays size={22} strokeWidth={1.5} aria-hidden="true" />
-            </span>
-            <span className="channel__text">
-              <span className="channel__label">Book a Meeting</span>
-              <span className="channel__action">Schedule a Meeting</span>
-            </span>
-            <ArrowUpRight className="channel__arrow" size={20} aria-hidden="true" />
-          </Link>
-        </li>
-      )}
     </ul>
   )
 }

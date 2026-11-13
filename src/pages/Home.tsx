@@ -153,7 +153,6 @@ function Intro() {
           <Eyebrow tone="forest">About Klarus &amp; Co</Eyebrow>
           <Reveal delay={0.15}>
             <p className="lead">{about.intro}</p>
-            <p>{hero.body}</p>
           </Reveal>
           <Reveal delay={0.25} className="intro__value">
             <span className="intro__value-label">{value.label}</span>

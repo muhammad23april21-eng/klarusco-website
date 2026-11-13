@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, CalendarDays, Menu, X } from 'lucide-react'
+import { ArrowRight, Menu, X } from 'lucide-react'
 import { hero, nav, routes } from '../../content/site'
 import { ease } from '../motion'
 import { Logo } from './Logo'
@@ -14,8 +14,6 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const overLight = lightBannerRoutes.includes(pathname)
-  // "Book a Meeting" is not shown on these pages
-  const isHome = pathname === routes.home || pathname === routes.pricing
   const solid = scrolled || open
 
   useEffect(() => {
@@ -67,12 +65,6 @@ export function Header() {
         </nav>
 
         <div className="header__actions">
-          {!isHome && (
-            <NavLink to={routes.meeting} className="header__meeting">
-              <CalendarDays size={16} aria-hidden="true" />
-              <span>Book a Meeting</span>
-            </NavLink>
-          )}
           <NavLink to={routes.pricing} className="btn btn--gold header__cta">
             <span>Get a Quote</span>
             <ArrowRight className="btn__arrow" size={16} aria-hidden="true" />
@@ -126,11 +118,6 @@ export function Header() {
               <NavLink to={routes.pricing} className="btn btn--gold">
                 <span>Get a Quote</span>
               </NavLink>
-              {!isHome && (
-                <NavLink to={routes.meeting} className="btn btn--ghost-light">
-                  <span>Book a Meeting</span>
-                </NavLink>
-              )}
             </motion.div>
           </motion.div>
         )}

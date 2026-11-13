@@ -544,6 +544,11 @@
   color: var(--forest);
   border-bottom-color: var(--gold);
 }
+/* Selected service tab: light-blue fill, navy text and underline */
+.svc-nav a.is-active {
+  background: #8fb3f3;
+  border-bottom-color: var(--forest);
+}
 
 .svc-head {
   display: flex;

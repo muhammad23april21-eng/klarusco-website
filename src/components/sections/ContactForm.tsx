@@ -1,4 +1,4 @@
-import { useCallback, useId, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -216,6 +216,13 @@ export function ContactForm() {
   // Contact options (WhatsApp / email / meeting) shown after a valid submission
   const [optionsOpen, setOptionsOpen] = useState(false);
   const closeOptions = useCallback(() => setOptionsOpen(false), []);
+  // Guards against duplicate submissions while a request is in flight
+  const submittingRef = useRef(false);
+  const doneRef = useRef<HTMLDivElement>(null);
+  // Bring the success message into view once the request is confirmed
+  useEffect(() => {
+    if (status === "sent") doneRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [status]);
 
   const update = (patch: Partial<Values>, keys: FieldKey[]) => {
     const next = { ...values, ...patch };
@@ -232,6 +239,7 @@ export function ContactForm() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     const errs = validate(values);
     setErrors(errs);
     setTouched({
@@ -263,6 +271,8 @@ export function ContactForm() {
     // Spam trap: hidden field that only bots fill in; the server ignores those submissions.
     const trap = (e.currentTarget as HTMLFormElement).elements.namedItem("website");
     const website = trap instanceof HTMLInputElement ? trap.value : "";
+    submittingRef.current = true;
+    setOptionsOpen(false);
     setStatus("submitting");
     try {
       const res = await fetch(config.formEndpoint, {
@@ -273,10 +283,15 @@ export function ContactForm() {
         },
         body: JSON.stringify({ ...payload(values), website }),
       });
-      setStatus(res.ok ? "sent" : "error");
-      if (res.ok) setOptionsOpen(true);
+      // Success only when the backend confirms it: HTTP 2xx and { ok: true }
+      const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      setOptionsOpen(false);
+      setStatus(res.ok && body?.ok === true ? "sent" : "error");
     } catch {
+      setOptionsOpen(false);
       setStatus("error");
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -318,8 +333,8 @@ export function ContactForm() {
 
   if (status === "sent") {
     return (
-      <>
       <motion.div
+        ref={doneRef}
         className="form-done"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -330,8 +345,6 @@ export function ContactForm() {
         <h3>Thank you — your quote request has been sent.</h3>
         <p>Our team will review your information and get back to you.</p>
       </motion.div>
-      {optionsModal}
-      </>
     );
   }
 

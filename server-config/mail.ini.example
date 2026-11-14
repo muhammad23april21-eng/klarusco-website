@@ -1,0 +1,22 @@
+; Klarus & Co contact form — SMTP settings TEMPLATE.
+; Copy to the server OUTSIDE public_html as:
+;   /home/u429903730/domains/klarusco.com/private/mail.ini
+; Fill in the password there only. Never commit the real file.
+
+smtp_host = smtp.hostinger.com
+smtp_port = 465
+smtp_secure = ssl
+smtp_user = info@klarusco.com
+smtp_pass = "PUT-THE-MAILBOX-PASSWORD-HERE"
+
+; Where enquiries are delivered and who the emails come from
+mail_to = info@klarusco.com
+mail_from = info@klarusco.com
+mail_from_name = "Klarus & Co"
+
+; Only these sites may post to the form
+allowed_origins = "https://klarusco.com,https://www.klarusco.com"
+
+; Spam protection: max submissions per visitor IP within the window (seconds)
+rate_limit = 5
+rate_window = 3600

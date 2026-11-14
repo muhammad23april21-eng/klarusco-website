@@ -260,6 +260,9 @@ export function ContactForm() {
       setOptionsOpen(true);
       return;
     }
+    // Spam trap: hidden field that only bots fill in; the server ignores those submissions.
+    const trap = (e.currentTarget as HTMLFormElement).elements.namedItem("website");
+    const website = trap instanceof HTMLInputElement ? trap.value : "";
     setStatus("submitting");
     try {
       const res = await fetch(config.formEndpoint, {
@@ -268,7 +271,7 @@ export function ContactForm() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(payload(values)),
+        body: JSON.stringify({ ...payload(values), website }),
       });
       setStatus(res.ok ? "sent" : "error");
       if (res.ok) setOptionsOpen(true);
@@ -339,6 +342,11 @@ export function ContactForm() {
   return (
     <>
     <form className="form quote-form" onSubmit={onSubmit} noValidate>
+      <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+        <label>
+          Website <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+        </label>
+      </div>
       <Section title="Basic information">
         <div className="form__row">
           <div className="field">

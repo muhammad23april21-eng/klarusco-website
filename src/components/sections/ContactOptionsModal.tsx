@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, CalendarDays, CheckCircle2, Mail, MessageCircle, X } from 'lucide-react'
@@ -34,7 +34,7 @@ export function ContactOptionsModal({ open, onClose, summary, sent }: Props) {
   }, [open, onClose])
 
   const wa = `https://wa.me/${popupContact.whatsappNumber}?text=${encodeURIComponent(summary)}`
-  const mail = `mailto:${popupContact.email}`
+  const mail = `mailto:${popupContact.email}?subject=${encodeURIComponent('Quote Request – Klarus & Co')}`
 
   const options = [
     { key: 'wa', icon: MessageCircle, label: 'Contact via WhatsApp', detail: `+${popupContact.whatsappNumber}`, href: wa, external: true },
@@ -79,7 +79,21 @@ export function ContactOptionsModal({ open, onClose, summary, sent }: Props) {
             <ul className="copts__list">
               {options.map(({ key, icon: Icon, label, detail, href, external }) => (
                 <li key={key}>
-                  <a className="copts__opt" href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                  <a
+                    className="copts__opt"
+                    href={href}
+                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    {...(key === 'mail'
+                      ? {
+                          onClick: (e: MouseEvent<HTMLAnchorElement>) => {
+                            // Open the visitor's email app directly so no parent handler can intercept the click.
+                            e.preventDefault()
+                            e.stopPropagation()
+                            window.location.href = href
+                          },
+                        }
+                      : {})}
+                  >
                     <span className="copts__icon" aria-hidden="true">
                       <Icon size={22} strokeWidth={1.5} />
                     </span>

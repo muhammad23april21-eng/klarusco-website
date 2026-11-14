@@ -8,7 +8,7 @@ import { ease } from '../motion'
 interface Props {
   open: boolean
   onClose: () => void
-  /** Plain-text summary of the submitted form, pre-filled into WhatsApp and email. */
+  /** Plain-text summary of the submitted form, pre-filled into WhatsApp. */
   summary: string
   /** True when the request was also delivered to the form backend. */
   sent: boolean
@@ -34,7 +34,7 @@ export function ContactOptionsModal({ open, onClose, summary, sent }: Props) {
   }, [open, onClose])
 
   const wa = `https://wa.me/${popupContact.whatsappNumber}?text=${encodeURIComponent(summary)}`
-  const mail = `mailto:${popupContact.email}?subject=${encodeURIComponent('Contact request')}&body=${encodeURIComponent(summary)}`
+  const mail = `mailto:${popupContact.email}`
 
   const options = [
     { key: 'wa', icon: MessageCircle, label: 'Contact via WhatsApp', detail: `+${popupContact.whatsappNumber}`, href: wa, external: true },
@@ -92,10 +92,6 @@ export function ContactOptionsModal({ open, onClose, summary, sent }: Props) {
                 </li>
               ))}
             </ul>
-
-            {popupContact.isPlaceholder && (
-              <p className="copts__note">Temporary placeholder contact details — to be replaced with the official WhatsApp number, email and meeting link.</p>
-            )}
           </motion.div>
         </motion.div>
       )}

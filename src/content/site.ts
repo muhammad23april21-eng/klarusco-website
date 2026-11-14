@@ -33,23 +33,22 @@ export const config = {
 }
 
 /**
- * TEMPORARY DUMMY CONTACT DETAILS — used by the contact-options popup shown after the
- * Contact Us form is submitted, until the real details are provided.
+ * Contact details for the contact-options popup shown after the Contact Us form is submitted.
+ * WhatsApp number and meeting link are still dummies until the real details are provided.
  * Replace these values (or set VITE_WHATSAPP_NUMBER / VITE_CONTACT_EMAIL / VITE_BOOKING_URL,
  * which take priority).
  */
 export const placeholderContact = {
   whatsappNumber: '15550000000', // dummy (+1 555 000 0000)
-  email: 'contact@example.com', // dummy
+  email: 'info@klarusco.com',
   meetingUrl: 'https://example.com/book-a-meeting', // dummy
 }
 
-/** Contact details used by the post-submission popup: real values when configured, otherwise the dummies above. */
+/** Contact details used by the post-submission popup: env values when configured, otherwise the defaults above. */
 export const popupContact = {
   whatsappNumber: config.whatsappNumber || placeholderContact.whatsappNumber,
   email: config.email || placeholderContact.email,
   meetingUrl: config.bookingUrl || placeholderContact.meetingUrl,
-  isPlaceholder: !config.whatsappNumber || !config.email || !config.bookingUrl,
 }
 
 /* ------------------------------------------------------------------ */

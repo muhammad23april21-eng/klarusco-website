@@ -8,7 +8,7 @@
  *
  * SMTP credentials are NOT in this file or in the repository. They are read from a
  * private INI file stored OUTSIDE public_html (see README → "Contact form email").
- * Default location on Hostinger:  /home/<user>/domains/klarusco.com/private/mail.ini
+ * Location on Hostinger:  /home/<user>/private/mail.ini
  */
 
 declare(strict_types=1);
@@ -26,7 +26,21 @@ function respond(int $code, array $body): void
 
 /* ------------------------------------------------------------------ config */
 
-$configPath = getenv('KLARUS_MAIL_CONFIG') ?: dirname(__DIR__, 2) . '/private/mail.ini';
+/**
+ * Find private/mail.ini by walking up from the folder ABOVE public_html (never inside it).
+ * Hostinger layout: /home/<user>/private/mail.ini, with the site at
+ * /home/<user>/domains/klarusco.com/public_html (also reachable as /home/<user>/public_html).
+ */
+function find_config(): string
+{
+    $dir = dirname(__DIR__, 2);
+    for ($i = 0; $i < 4 && $dir !== dirname($dir); $i++, $dir = dirname($dir)) {
+        if (is_file($dir . '/private/mail.ini')) return $dir . '/private/mail.ini';
+    }
+    return dirname(__DIR__, 4) . '/private/mail.ini';
+}
+
+$configPath = getenv('KLARUS_MAIL_CONFIG') ?: find_config();
 $cfg = is_readable($configPath) ? parse_ini_file($configPath, false, INI_SCANNER_RAW) : false;
 if (!$cfg || empty($cfg['smtp_user']) || empty($cfg['smtp_pass'])) {
     error_log('[contact] mail config missing or incomplete at ' . $configPath);
@@ -74,9 +88,9 @@ if (trim((string) ($in['website'] ?? '')) !== '') {
 
 /* --------------------------------------------------------------- rate limit */
 
-function rate_limited(array $cfg): bool
+function rate_limited(array $cfg, string $configPath): bool
 {
-    $dir = dirname(__DIR__, 2) . '/private/ratelimit';
+    $dir = dirname($configPath) . '/ratelimit';
     if (!is_dir($dir) && !@mkdir($dir, 0700, true)) {
         $dir = sys_get_temp_dir() . '/klarus-contact-rl';
         if (!is_dir($dir) && !@mkdir($dir, 0700, true)) return false;
@@ -102,7 +116,7 @@ function rate_limited(array $cfg): bool
     return $blocked;
 }
 
-if (rate_limited($cfg)) {
+if (rate_limited($cfg, $configPath)) {
     respond(429, ['ok' => false, 'error' => 'too_many_requests']);
 }
 

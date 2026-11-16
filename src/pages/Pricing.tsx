@@ -119,12 +119,13 @@ function TellUsStep() {
 
 const chooserIcons = { hourly: Clock, monthly: UserRoundCheck }
 
-/** The two engagement options, shown as static information cards (not selectable). */
+/** The two engagement options, shown as static information cards (not selectable). Content: page.step2. */
 function PlanCards() {
   return (
     <div className="chooser">
       {plans.map((p, i) => {
         const Icon = chooserIcons[p.id]
+        const card = page.step2.plans.find((c) => c.id === p.id)!
         return (
           <Reveal key={p.id} delay={i * 0.1} className="chooser__wrap">
             <div className={`chooser__opt chooser__opt--${p.id}`}>
@@ -133,13 +134,9 @@ function PlanCards() {
                   <Icon size={22} strokeWidth={1.4} aria-hidden="true" />
                 </span>
               </span>
-              <span className="chooser__name">{p.name}</span>
-              {p.subtitle && <span className="chooser__sub">{p.subtitle}</span>}
-              {p.highlight && <span className="chooser__sub">{p.highlight}</span>}
+              <span className="chooser__name">{card.name}</span>
               <span className="chooser__desc">
-                {p.description.map((d) => (
-                  <span key={d}>{d}</span>
-                ))}
+                <span>{card.body}</span>
               </span>
             </div>
           </Reveal>
@@ -150,14 +147,16 @@ function PlanCards() {
 }
 
 function SupportModelStep() {
+  const s = page.step2
   return (
     <section className="section section--white chooser-section" aria-labelledby="chooser-title">
       <div className="container">
         <div className="chooser-section__head">
-          <span className="step-tag">Step 2</span>
+          <span className="step-tag">{s.label}</span>
           <h2 id="chooser-title" className="display-3">
-            Choose Your Support Model
+            {s.title}
           </h2>
+          <p className="lead chooser-section__lead">{s.body}</p>
         </div>
         <PlanCards />
       </div>

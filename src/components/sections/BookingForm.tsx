@@ -119,7 +119,7 @@ export function BookingForm({ prefill, enquiry, onBack, onDone }: Props) {
     if (!v.country) e.country = 'Please select your country.'
     if (!v.date) e.date = 'Please choose a preferred date.'
     if (v.hour === null) e.time = 'Please choose a preferred time.'
-    if (v.purpose.trim().length < 5) e.purpose = 'Please tell us briefly what you would like to discuss.'
+    // Meeting purpose is optional
     return e
   }
 
@@ -337,7 +337,7 @@ export function BookingForm({ prefill, enquiry, onBack, onDone }: Props) {
         </div>
 
         <div className="field">
-          {label('purpose', 'Meeting Purpose')}
+          <label htmlFor={`${uid}-purpose`}>Meeting Purpose</label>
           <textarea {...field('purpose')} rows={3} maxLength={1000} value={values.purpose} onChange={(e) => update({ purpose: e.target.value })} />
           {err('purpose')}
         </div>

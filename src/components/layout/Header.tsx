@@ -40,7 +40,7 @@ export function Header() {
   const tone = solid || overLight ? 'dark' : 'light'
 
   return (
-    <header className={`header header--${tone} ${solid ? 'is-solid' : ''}`}>
+    <header className={`header header--${tone} ${solid ? 'is-solid' : ''} ${open ? 'is-menu-open' : ''}`}>
       <div className={`topbar ${scrolled ? 'is-hidden' : ''}`}>
         <div className="container topbar__inner">
           <span className="topbar__links">

@@ -180,7 +180,7 @@ if (!filter_var($b['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'email';
 if (!preg_match('/^\+?[0-9 ()\-]{6,40}$/', $b['phone']) || strlen(preg_replace('/\D/', '', $b['phone'])) < 6) $errors[] = 'phone';
 if (mb_strlen($b['company']) < 2) $errors[] = 'company';
 if ($b['country'] === '') $errors[] = 'country';
-if (mb_strlen($b['purpose']) < 5) $errors[] = 'purpose';
+// meeting purpose is optional
 if (!$day || $day < $today || $day > $today->modify('+' . WINDOW_DAYS . ' days') || (int) $day->format('N') > 5) $errors[] = 'date';
 if (!in_array($b['hour'], SLOT_HOURS, true)) $errors[] = 'time';
 elseif ($day && $day->setTime($b['hour'], 0) <= $now) $errors[] = 'time'; // that hour has already started
@@ -318,7 +318,7 @@ $details = "Full name:           {$b['name']}\n"
     . "Preferred date:      $dayText\n"
     . "Preferred time:      $timeText\n"
     . "Customer timezone:   $tzLine\n\n"
-    . "Meeting purpose:\n{$b['purpose']}\n";
+    . "Meeting purpose:\n" . ($b['purpose'] !== '' ? $b['purpose'] : 'Not provided') . "\n";
 
 $enquiryLines = '';
 foreach (['Business type' => $e['businessType'], 'System in use' => $e['systemInUse'], 'Plan model' => $e['planModel']] as $label => $v) {

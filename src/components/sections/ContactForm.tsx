@@ -106,9 +106,8 @@ function validate(v: Values): Errors {
     const max = resourceColumn[v.planModel].max;
     if (values.some((x) => x !== "" && (!/^\d+$/.test(x) || Number(x) > max))) {
       e.resources = `Please enter whole numbers between 0 and ${max}.`;
-    } else if (!values.some((x) => Number(x) > 0)) {
-      e.resources = `Please enter ${resourceColumn[v.planModel].unit} for at least one role, or tick “Not Sure”.`;
     }
+    // Resources are optional: leaving every role empty is allowed
   }
   // Requirements are optional; only the length cap applies
   if (v.requirements.length > 2000)
@@ -562,7 +561,7 @@ export function ContactForm() {
               transition={{ duration: 0.35, ease }}
             >
               <p className="resources__title">
-                Choose Resource <span aria-hidden="true">*</span>
+                Choose Resource
               </p>
               <table
                 className={`resources__table ${touched.resources && errors.resources ? "is-invalid" : ""}`}

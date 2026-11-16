@@ -356,14 +356,16 @@
   background: var(--forest);
   border-color: var(--forest);
 }
+/* Refined sans-serif labels (site body font), slightly smaller than before; colours unchanged */
 .themes__tab-label {
-  font-family: var(--font-display);
-  font-size: clamp(1.35rem, 1.2rem + 0.45vw, 1.65rem);
-  font-weight: 500;
-  line-height: 1.15;
+  font-family: var(--font-sans);
+  font-size: clamp(0.98rem, 0.94rem + 0.2vw, 1.08rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
 }
 .themes__tab.is-active .themes__tab-label {
-  font-weight: 600;
+  font-weight: 700;
 }
 .themes__indicator {
   position: absolute;
@@ -442,7 +444,7 @@
     font-size: 10.5px;
   }
   .themes__tab-label {
-    font-size: 1.2rem;
+    font-size: 0.92rem;
   }
 }
 @media (max-width: 680px) {
@@ -1171,6 +1173,9 @@
 .chooser-section__head {
   margin-bottom: 36px;
 }
+.chooser-section__lead {
+  margin-top: 12px;
+}
 .chooser {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1484,7 +1489,7 @@
   aspect-ratio: 1 / 1.08;
 }
 
-/* Step 1 — deep navy band; marker, heading and paragraph stacked and centred (equal top/bottom padding) */
+/* Step 1 — deep navy band; marker, heading and paragraph stacked and left-aligned (equal top/bottom padding) */
 .hiw-step--one {
   padding-block: clamp(56px, 6vw, 88px);
   background: #172f70;
@@ -1492,13 +1497,11 @@
 .hiw-step--one .hiw-step__head {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   max-width: none;
-  text-align: center;
+  text-align: left;
 }
 .hiw-step--one .hiw-step__marker {
-  /* left-aligned with the Step 2 label (content edge); heading and paragraph stay centred */
-  align-self: flex-start;
   margin-bottom: 18px;
 }
 .hiw-step--one .display-2 {

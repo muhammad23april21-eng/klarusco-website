@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
 import { ArrowUp, Mail, MessageCircle } from 'lucide-react'
-import { brand, hero, nav, routes, services } from '../../content/site'
-import { emailHref, whatsappHref } from '../../content/links'
+import { brand, hero, nav, popupContact, routes, services } from '../../content/site'
 import { Logo } from './Logo'
 
+/** WhatsApp 0322 8504060 (+92 322 8504060) — opens a chat with this number. */
+const footerWhatsApp = { href: `https://wa.me/${popupContact.whatsappNumber}`, label: '0322 8504060' }
+/** Opens the visitor's default email application. */
+const footerEmail = { href: `mailto:${popupContact.email}`, label: popupContact.email }
+
 export function Footer() {
-  const wa = whatsappHref({ plan: null, tier: null })
-  const mail = emailHref({ plan: null, tier: null })
 
   return (
     <footer className="footer">
@@ -60,17 +62,15 @@ export function Footer() {
             <ul className="footer__links footer__contact">
               <li>
                 <MessageCircle size={16} aria-hidden="true" />
-                {wa ? (
-                  <a href={wa} target="_blank" rel="noopener noreferrer">
-                    WhatsApp
-                  </a>
-                ) : (
-                  <Link to={routes.contact}>WhatsApp</Link>
-                )}
+                <a href={footerWhatsApp.href} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${footerWhatsApp.label}`}>
+                  {footerWhatsApp.label}
+                </a>
               </li>
               <li>
                 <Mail size={16} aria-hidden="true" />
-                {mail ? <a href={mail}>Email</a> : <Link to={routes.contact}>Email</Link>}
+                <a href={footerEmail.href} aria-label={`Email ${footerEmail.label}`}>
+                  {footerEmail.label}
+                </a>
               </li>
             </ul>
           </div>

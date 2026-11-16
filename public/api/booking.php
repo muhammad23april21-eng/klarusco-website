@@ -3,11 +3,8 @@
  * Klarus & Co — Meeting request endpoint (used by the details form in the contact-options popup,
  * src/components/sections/BookingForm.tsx). No database: it only validates and sends email.
  *
- * POST (JSON) with "kind":
- *   "meeting"  → 1. emails the full meeting request to the business inbox (info@klarusco.com),
- *                2. emails the visitor a "request received" confirmation.
- *   "whatsapp" → emails the business inbox that the visitor chose WhatsApp, with the same details
- *                (the visitor sends the WhatsApp message themselves; nothing is sent on their behalf).
+ * POST (JSON) → 1. emails the full meeting request to the business inbox (info@klarusco.com),
+ *               2. emails the visitor a "request received" confirmation.
  *
  * The date and time are PREFERENCES, not confirmed appointments — the team confirms manually.
  * Accepted: Monday–Friday, today through today + 7 days, one-hour slots starting 9:00 … 17:00
@@ -120,10 +117,6 @@ function rate_limited(array $cfg, string $configPath): bool
     return $blocked;
 }
 
-if (rate_limited($cfg, $configPath)) {
-    respond(429, ['ok' => false, 'error' => 'too_many_requests']);
-}
-
 /* --------------------------------------------------------------- validation */
 
 function line(mixed $v, int $max): string
@@ -149,10 +142,6 @@ function slot_label(int $hour): string
     return $fmt($hour) . ' – ' . $fmt($hour + 1);
 }
 
-$kind = (string) ($in['kind'] ?? 'meeting');
-if (!in_array($kind, ['meeting', 'whatsapp'], true)) {
-    respond(422, ['ok' => false, 'error' => 'validation', 'fields' => ['kind']]);
-}
 
 $b = [
     'name'     => line($in['name'] ?? '', 120),
@@ -197,6 +186,11 @@ if (!in_array($b['hour'], SLOT_HOURS, true)) $errors[] = 'time';
 elseif ($day && $day->setTime($b['hour'], 0) <= $now) $errors[] = 'time'; // that hour has already started
 if ($errors) {
     respond(422, ['ok' => false, 'error' => 'validation', 'fields' => array_values(array_unique($errors))]);
+}
+
+// Checked only after validation, so rejected (invalid) requests do not use up the allowance.
+if (rate_limited($cfg, $configPath)) {
+    respond(429, ['ok' => false, 'error' => 'too_many_requests']);
 }
 
 /* ------------------------------------------------------------- SMTP client */
@@ -336,24 +330,13 @@ $footer = "\n" . str_repeat('-', 52) . "\n"
     . 'Submitted: ' . gmdate('Y-m-d H:i') . " UTC\n"
     . "Reply to this email to respond directly to {$b['name']}.\n";
 
-if ($kind === 'meeting') {
-    $adminSubject = "Meeting request: {$b['company']} — preferred {$day->format('D j M Y')}, " . slot_label($b['hour']) . ' PKT';
-    $adminBody = "New meeting request from the klarusco.com contact popup\n"
-        . str_repeat('-', 52) . "\n\n"
-        . "The date and time below are the customer's PREFERENCE, not a confirmed\n"
-        . "appointment. Please confirm availability with the customer and share the\n"
-        . "Google Meet link by email or WhatsApp before the meeting.\n\n"
-        . $details . $enquiryBlock . $footer;
-} else {
-    $adminSubject = "WhatsApp contact selected: {$b['company']} ({$b['name']})";
-    $adminBody = "A customer chose to contact Klarus & Co via WhatsApp\n"
-        . str_repeat('-', 52) . "\n\n"
-        . "The customer selected the WhatsApp option in the klarusco.com contact popup.\n"
-        . "WhatsApp was opened for them with the message below typed in, ready to send to\n"
-        . "+92 322 8504060. They have to press Send themselves, so the message may or may\n"
-        . "not arrive. If it does not, you can reach them using the details below.\n\n"
-        . $details . $enquiryBlock . $footer;
-}
+$adminSubject = "Meeting request: {$b['company']} — preferred {$day->format('D j M Y')}, " . slot_label($b['hour']) . ' PKT';
+$adminBody = "New meeting request from the klarusco.com contact popup\n"
+    . str_repeat('-', 52) . "\n\n"
+    . "The date and time below are the customer's PREFERENCE, not a confirmed\n"
+    . "appointment. Please confirm availability with the customer and share the\n"
+    . "Google Meet link by email or WhatsApp before the meeting.\n\n"
+    . $details . $enquiryBlock . $footer;
 
 $userBody = "Dear {$b['name']},\n\n"
     . "Your meeting request has been received. Our team will review your preferred date and time "
@@ -383,26 +366,24 @@ try {
         'subject' => $adminSubject,
     ], $adminBody));
 } catch (Throwable $ex) {
-    error_log("[meeting] $kind notification failed: " . $ex->getMessage());
+    error_log('[meeting] notification failed: ' . $ex->getMessage());
     if (isset($smtp)) $smtp->quit();
     respond(502, ['ok' => false, 'error' => 'send_failed']);
 }
 
-if ($kind === 'meeting') {
-    // The request has reached the inbox; a failed confirmation should not show the visitor an error.
-    try {
-        $smtp->cmd('RSET', 250);
-        $smtp->send($fromEmail, $b['email'], build_message([
-            'fromEmail' => $fromEmail, 'fromName' => $fromName,
-            'toEmail' => $b['email'], 'toName' => $b['name'],
-            'replyTo' => $toEmail, 'replyName' => $fromName,
-            'subject' => 'Your meeting request has been received — Klarus & Co',
-            'auto' => true,
-        ], $userBody));
-    } catch (Throwable $ex) {
-        error_log('[meeting] confirmation failed: ' . $ex->getMessage());
-    }
+// The request has reached the inbox; a failed confirmation should not show the visitor an error.
+try {
+    $smtp->cmd('RSET', 250);
+    $smtp->send($fromEmail, $b['email'], build_message([
+        'fromEmail' => $fromEmail, 'fromName' => $fromName,
+        'toEmail' => $b['email'], 'toName' => $b['name'],
+        'replyTo' => $toEmail, 'replyName' => $fromName,
+        'subject' => 'Your meeting request has been received — Klarus & Co',
+        'auto' => true,
+    ], $userBody));
+} catch (Throwable $ex) {
+    error_log('[meeting] confirmation failed: ' . $ex->getMessage());
 }
 $smtp->quit();
 
-respond(200, ['ok' => true, 'kind' => $kind, 'dayText' => $dayText, 'time' => slot_label($b['hour']) . ' PKT']);
+respond(200, ['ok' => true, 'dayText' => $dayText, 'time' => slot_label($b['hour']) . ' PKT']);

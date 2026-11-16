@@ -116,10 +116,6 @@ function rate_limited(array $cfg, string $configPath): bool
     return $blocked;
 }
 
-if (rate_limited($cfg, $configPath)) {
-    respond(429, ['ok' => false, 'error' => 'too_many_requests']);
-}
-
 /* --------------------------------------------------------------- validation */
 
 /** Single-line text: strip control chars (incl. CR/LF), collapse spaces, cap length. */
@@ -174,6 +170,11 @@ if ($d['planModel'] === '') $errors[] = 'planModel';
 // requirements are optional
 if ($errors) {
     respond(422, ['ok' => false, 'error' => 'validation', 'fields' => $errors]);
+}
+
+// Checked only after validation, so rejected (invalid) submissions do not use up the allowance.
+if (rate_limited($cfg, $configPath)) {
+    respond(429, ['ok' => false, 'error' => 'too_many_requests']);
 }
 
 /* ------------------------------------------------------------- SMTP client */

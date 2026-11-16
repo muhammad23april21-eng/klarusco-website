@@ -1,19 +1,15 @@
 import { useId, useState, type FormEvent } from 'react'
-import { AlertCircle, ArrowLeft, Info, Loader2, MessageCircle } from 'lucide-react'
-import { config, popupContact } from '../../content/site'
+import { AlertCircle, ArrowLeft, Info, Loader2 } from 'lucide-react'
+import { config } from '../../content/site'
 import { countries, findCountry } from '../../content/countries'
 
 /*
- * Details form inside the contact-options popup, used by two options:
- *  - "meeting":  sends a meeting request (email to the team + confirmation to the visitor).
- *  - "whatsapp": opens WhatsApp with the details typed in (the visitor presses Send) and
- *                emails the team that the visitor chose WhatsApp.
- * The date and time are preferences only — the team confirms availability manually.
+ * Meeting request form inside the contact-options popup ("Book a Meeting"): sends the request to
+ * the team and a confirmation to the visitor. The date and time are preferences only — the team
+ * confirms availability manually.
  * Window: today + 7 days, Monday–Friday, one-hour slots 9 AM – 6 PM Pakistan time (PKT, UTC+5).
  * public/api/booking.php re-checks all of this.
  */
-
-export type DetailsMode = 'meeting' | 'whatsapp'
 
 const PKT_OFFSET_MS = 5 * 60 * 60 * 1000 // Pakistan has no daylight saving
 const WINDOW_DAYS = 7
@@ -68,17 +64,11 @@ export interface BookingPrefill {
 }
 
 export interface DetailsResult {
-  mode: DetailsMode
   dayText: string
   time: string
-  /** WhatsApp link (mode "whatsapp"), so the visitor can open it again */
-  waUrl?: string
-  /** False when the browser blocked the new WhatsApp tab */
-  waOpened?: boolean
 }
 
 interface Props {
-  mode: DetailsMode
   prefill?: BookingPrefill
   /** Contact-form payload submitted just before; included in the team's email. */
   enquiry?: object
@@ -97,7 +87,7 @@ const visitorTimezone = (() => {
   }
 })()
 
-export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
+export function BookingForm({ prefill, enquiry, onBack, onDone }: Props) {
   const uid = useId()
   const [days, setDays] = useState(bookingWindow)
   const [values, setValues] = useState({
@@ -142,22 +132,6 @@ export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
 
   const countryName = findCountry(values.country)?.name ?? values.country
 
-  /** WhatsApp message with every detail; the visitor reviews it and presses Send. */
-  const whatsappUrl = (day: WindowDay, slot: string) => {
-    const text = [
-      'Hello Klarus & Co, I would like to discuss my requirements.',
-      '',
-      `Name: ${values.name.trim()}`,
-      `Email: ${values.email.trim()}`,
-      `Phone: ${values.phone.trim()}`,
-      `Company: ${values.company.trim()}`,
-      `Country: ${countryName}`,
-      `Preferred meeting: ${day.longText}, ${slot} PKT`,
-      `Meeting purpose: ${values.purpose.trim()}`,
-    ].join('\n')
-    return `https://wa.me/${popupContact.whatsappNumber}?text=${encodeURIComponent(text)}`
-  }
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (sending) return
@@ -181,19 +155,8 @@ export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
     const day = fresh.find((d) => d.date === v.date)!
     const slot = SLOTS.find((s) => s.hour === v.hour)!.label
 
-    // WhatsApp must open straight from the click, before any network request, or browsers block it.
-    let waUrl: string | undefined
-    let waOpened: boolean | undefined
-    if (mode === 'whatsapp') {
-      waUrl = whatsappUrl(day, slot)
-      const win = window.open(waUrl, '_blank')
-      if (win) win.opener = null
-      waOpened = Boolean(win)
-    }
-
     if (!config.bookingEndpoint) {
-      if (mode === 'whatsapp') onDone({ mode, dayText: day.longText, time: `${slot} PKT`, waUrl, waOpened })
-      else setFormError('Online meeting requests are not available right now. Please contact us by email or WhatsApp instead.')
+      setFormError('Online meeting requests are not available right now. Please contact us by email or WhatsApp instead.')
       return
     }
 
@@ -205,7 +168,7 @@ export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          kind: mode,
+          kind: 'meeting',
           name: v.name.trim(),
           email: v.email.trim(),
           phone: v.phone.trim(),
@@ -221,12 +184,7 @@ export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
       })
       const body = (await res.json().catch(() => null)) as { ok?: boolean; fields?: string[] } | null
       if (res.ok && body?.ok === true) {
-        onDone({ mode, dayText: day.longText, time: `${slot} PKT`, waUrl, waOpened })
-        return
-      }
-      if (mode === 'whatsapp') {
-        // WhatsApp is already open with their message; only our heads-up email failed.
-        onDone({ mode, dayText: day.longText, time: `${slot} PKT`, waUrl, waOpened })
+        onDone({ dayText: day.longText, time: `${slot} PKT` })
         return
       }
       if (res.status === 422 && (body?.fields?.includes('date') || body?.fields?.includes('time'))) {
@@ -241,8 +199,7 @@ export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
         setFormError('Sorry, your meeting request could not be sent. Please try again, or contact us by email or WhatsApp.')
       }
     } catch {
-      if (mode === 'whatsapp') onDone({ mode, dayText: day.longText, time: `${slot} PKT`, waUrl, waOpened })
-      else setFormError('Sorry, your meeting request could not be sent. Please check your connection and try again.')
+      setFormError('Sorry, your meeting request could not be sent. Please check your connection and try again.')
     } finally {
       setSending(false)
     }
@@ -408,12 +365,8 @@ export function BookingForm({ mode, prefill, enquiry, onBack, onDone }: Props) {
           <ArrowLeft size={16} aria-hidden="true" /> Back
         </button>
         <button type="submit" className="btn btn--forest" disabled={sending}>
-          {sending ? (
-            <Loader2 className="spin" size={17} aria-hidden="true" />
-          ) : mode === 'whatsapp' ? (
-            <MessageCircle size={17} aria-hidden="true" />
-          ) : null}
-          <span>{sending ? 'Sending…' : mode === 'whatsapp' ? 'Continue to WhatsApp' : 'Send Meeting Request'}</span>
+          {sending && <Loader2 className="spin" size={17} aria-hidden="true" />}
+          <span>{sending ? 'Sending…' : 'Send Meeting Request'}</span>
         </button>
       </div>
     </form>

@@ -173,7 +173,7 @@ function summarise(v: Values) {
     `Plan model: ${p.planModel}`,
     res,
     p.requirements ? "" : null,
-    p.requirements || null,
+    p.requirements ? `Requirements:\n${p.requirements}` : null,
   ]
     .filter((l) => l !== null)
     .join("\n");
@@ -211,6 +211,8 @@ export function ContactForm() {
     {},
   );
   const [status, setStatus] = useState<Status>("idle");
+  // True when the backend refused the submission because of its hourly limit (HTTP 429)
+  const [rateLimited, setRateLimited] = useState(false);
   // Contact options (WhatsApp / email / meeting) shown after a valid submission
   const [optionsOpen, setOptionsOpen] = useState(false);
   // After a confirmed submission the Thank You message waits until the visitor picks a contact option
@@ -294,11 +296,13 @@ export function ContactForm() {
       // Success only when the backend confirms it: HTTP 2xx and { ok: true }
       const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
       const ok = res.ok && body?.ok === true;
+      setRateLimited(res.status === 429);
       setStatus(ok ? "sent" : "error");
       // Emails are sent: offer WhatsApp / email / meeting before showing the Thank You message
       setOptionsOpen(ok);
     } catch {
       setOptionsOpen(false);
+      setRateLimited(false);
       setStatus("error");
     } finally {
       submittingRef.current = false;
@@ -338,6 +342,7 @@ export function ContactForm() {
       open={optionsOpen}
       onClose={closeOptions}
       sent={status === "sent"}
+      summary={text}
       onSelect={selectOption}
       prefill={{
         name: values.representativeName.trim(),
@@ -706,8 +711,9 @@ export function ContactForm() {
             >
               <AlertCircle size={18} aria-hidden="true" />
               <p>
-                Sorry, your request could not be sent. Please try again or use
-                WhatsApp or email.
+                {rateLimited
+                  ? "Your request could not be sent: too many requests have been sent from your connection in the last hour. Please try again later, or contact us by WhatsApp or email."
+                  : "Sorry, your request could not be sent. Please try again or use WhatsApp or email."}
               </p>
             </motion.div>
           )}

@@ -1,29 +1,31 @@
-import { useEffect, useRef, useState, type MouseEvent, type RefObject } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, CalendarDays, CheckCircle2, Mail, MessageCircle, X } from 'lucide-react'
 import { parsePhoneNumberFromString } from 'libphonenumber-js/min'
 import { popupContact } from '../../content/site'
 import { ease } from '../motion'
-import { BookingForm, type BookingPrefill, type DetailsMode, type DetailsResult } from './BookingForm'
+import { BookingForm, type BookingPrefill, type DetailsResult } from './BookingForm'
 
 interface Props {
   open: boolean
   onClose: () => void
   /** True when the request was also delivered to the form backend. */
   sent: boolean
+  /** Plain-text summary of the submitted Contact Us form, pre-filled into WhatsApp and email. */
+  summary: string
   /** Called after the visitor has completed an option (its action has already been triggered). */
   onSelect?: (key: string) => void
-  /** Details from the submitted contact form, used to pre-fill the details form. */
+  /** Details from the submitted contact form, used to pre-fill the meeting form. */
   prefill?: BookingPrefill
-  /** Contact-form payload, passed on to the team's email. */
+  /** Contact-form payload, passed on to the team's meeting-request email. */
   enquiry?: object
 }
 
-type View = 'options' | DetailsMode | 'done'
+type View = 'options' | 'meeting' | 'done'
 
 /** Shown after a valid Contact Us submission: WhatsApp, email or a meeting request. */
-export function ContactOptionsModal({ open, onClose, sent, onSelect, prefill, enquiry }: Props) {
+export function ContactOptionsModal({ open, onClose, sent, summary, onSelect, prefill, enquiry }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -54,7 +56,15 @@ export function ContactOptionsModal({ open, onClose, sent, onSelect, prefill, en
             if (e.target === e.currentTarget) onClose()
           }}
         >
-          <Panel closeRef={closeRef} onClose={onClose} sent={sent} onSelect={onSelect} prefill={prefill} enquiry={enquiry} />
+          <Panel
+            closeRef={closeRef}
+            onClose={onClose}
+            sent={sent}
+            summary={summary}
+            onSelect={onSelect}
+            prefill={prefill}
+            enquiry={enquiry}
+          />
         </motion.div>
       )}
     </AnimatePresence>,
@@ -62,12 +72,12 @@ export function ContactOptionsModal({ open, onClose, sent, onSelect, prefill, en
   )
 }
 
-interface PanelProps extends Pick<Props, 'onClose' | 'sent' | 'onSelect' | 'prefill' | 'enquiry'> {
+interface PanelProps extends Pick<Props, 'onClose' | 'sent' | 'summary' | 'onSelect' | 'prefill' | 'enquiry'> {
   closeRef: RefObject<HTMLButtonElement | null>
 }
 
 /** Popup body. Mounted each time the popup opens, so it always starts on the three options. */
-function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelProps) {
+function Panel({ closeRef, onClose, sent, summary, onSelect, prefill, enquiry }: PanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const [view, setView] = useState<View>('options')
   const [result, setResult] = useState<DetailsResult | null>(null)
@@ -78,13 +88,12 @@ function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelPro
   }, [view])
 
   const waDisplay = parsePhoneNumberFromString(`+${popupContact.whatsappNumber}`)?.formatInternational() ?? `+${popupContact.whatsappNumber}`
-  const mail = `mailto:${popupContact.email}?subject=${encodeURIComponent('Quote Request – Klarus & Co')}`
-
-  const options = [
-    { key: 'wa', icon: MessageCircle, label: 'Contact via WhatsApp', detail: waDisplay, form: 'whatsapp' as const },
-    { key: 'mail', icon: Mail, label: 'Contact via Email', detail: popupContact.email, form: null },
-    { key: 'meet', icon: CalendarDays, label: 'Book a Meeting', detail: 'Choose a time that suits you', form: 'meeting' as const },
-  ]
+  // WhatsApp opens with the full enquiry typed in; the visitor only has to press Send.
+  const waText = `Hello Klarus & Co, I have submitted a quote request on your website:\n\n${summary}`
+  const wa = `https://wa.me/${popupContact.whatsappNumber}?text=${encodeURIComponent(waText)}`
+  // The email app opens a draft to info@klarusco.com with the same details.
+  const mailBody = `Hello Klarus & Co,\n\nI have submitted a quote request on your website. My details:\n\n${summary}\n`
+  const mail = `mailto:${popupContact.email}?subject=${encodeURIComponent('Quote Request – Klarus & Co')}&body=${encodeURIComponent(mailBody)}`
 
   const optionBody = (Icon: typeof Mail, label: string, detail: string) => (
     <>
@@ -99,12 +108,10 @@ function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelPro
     </>
   )
 
-  const isForm = view === 'meeting' || view === 'whatsapp'
-
   return (
     <motion.div
       ref={panelRef}
-      className={`copts__panel${isForm ? ' copts__panel--wide' : ''}`}
+      className={`copts__panel${view === 'meeting' ? ' copts__panel--wide' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="copts-title"
@@ -117,28 +124,17 @@ function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelPro
         <X size={20} aria-hidden="true" />
       </button>
       <span className="copts__badge" aria-hidden="true">
-        {view === 'meeting' ? (
-          <CalendarDays size={26} strokeWidth={1.5} />
-        ) : view === 'whatsapp' ? (
-          <MessageCircle size={26} strokeWidth={1.5} />
-        ) : (
-          <CheckCircle2 size={26} strokeWidth={1.5} />
-        )}
+        {view === 'meeting' ? <CalendarDays size={26} strokeWidth={1.5} /> : <CheckCircle2 size={26} strokeWidth={1.5} />}
       </span>
 
-      {isForm && (
+      {view === 'meeting' && (
         <>
-          <h2 id="copts-title" className="copts__title">
-            {view === 'meeting' ? 'Book a meeting' : 'Contact us on WhatsApp'}
-          </h2>
+          <h2 id="copts-title" className="copts__title">Book a meeting</h2>
           <p className="copts__intro">
-            {view === 'meeting'
-              ? 'Tell us when suits you. Choose a preferred weekday within the next 7 days and a one-hour time between 9:00 AM and 6:00 PM Pakistan Standard Time (PKT).'
-              : 'Add your details and preferred meeting time. We will open WhatsApp with your message ready — you then press Send.'}
+            Tell us when suits you. Choose a preferred weekday within the next 7 days and a one-hour time between 9:00 AM
+            and 6:00 PM Pakistan Standard Time (PKT).
           </p>
           <BookingForm
-            key={view}
-            mode={view}
             prefill={prefill}
             enquiry={enquiry}
             onBack={() => setView('options')}
@@ -152,21 +148,11 @@ function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelPro
 
       {view === 'done' && result && (
         <>
-          <h2 id="copts-title" className="copts__title">
-            {result.mode === 'meeting' ? 'Meeting request received' : 'Continue in WhatsApp'}
-          </h2>
-          {result.mode === 'meeting' ? (
-            <p className="copts__intro">
-              Your meeting request has been received. Our team will review your preferred date and time and share the
-              Google Meet link with you via email or WhatsApp before the meeting.
-            </p>
-          ) : (
-            <p className="copts__intro">
-              {result.waOpened === false
-                ? 'Your browser did not open WhatsApp automatically. Use the button below to open it with your message ready, then press Send.'
-                : 'WhatsApp has opened with your message ready. Please press Send in WhatsApp to send it to us.'}
-            </p>
-          )}
+          <h2 id="copts-title" className="copts__title">Meeting request received</h2>
+          <p className="copts__intro">
+            Your meeting request has been received. Our team will review your preferred date and time and share the
+            Google Meet link with you via email or WhatsApp before the meeting.
+          </p>
           <dl className="cbook__done">
             <div>
               <dt>Preferred date</dt>
@@ -178,18 +164,10 @@ function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelPro
             </div>
           </dl>
           <p className="copts__note">
-            {result.mode === 'meeting'
-              ? 'This is a request, not a confirmed appointment. We have emailed you a copy of the details.'
-              : 'Your message is only sent once you press Send in WhatsApp. This is a request, not a confirmed appointment.'}
+            This is a request, not a confirmed appointment. We have emailed you a copy of the details.
           </p>
           <div className="cbook__done-actions">
-            {result.mode === 'whatsapp' && result.waUrl && (
-              <a className="btn btn--outline-dark" href={result.waUrl} target="_blank" rel="noopener noreferrer">
-                <MessageCircle size={16} aria-hidden="true" />
-                <span>{result.waOpened === false ? 'Open WhatsApp' : 'Open WhatsApp again'}</span>
-              </a>
-            )}
-            <button type="button" className="btn btn--forest" onClick={() => onSelect?.(result.mode === 'meeting' ? 'meet' : 'wa')}>
+            <button type="button" className="btn btn--forest" onClick={() => onSelect?.('meet')}>
               <span>Done</span>
             </button>
           </div>
@@ -204,30 +182,33 @@ function Panel({ closeRef, onClose, sent, onSelect, prefill, enquiry }: PanelPro
           <p className="copts__intro">Choose how you would like to connect with our team.</p>
 
           <ul className="copts__list">
-            {options.map(({ key, icon, label, detail, form }) => (
-              <li key={key}>
-                {form ? (
-                  // WhatsApp and Book a Meeting collect the details inside this popup
-                  <button type="button" className="copts__opt" onClick={() => setView(form)}>
-                    {optionBody(icon, label, detail)}
-                  </button>
-                ) : (
-                  <a
-                    className="copts__opt"
-                    href={mail}
-                    onClick={(e: MouseEvent<HTMLAnchorElement>) => {
-                      // Open the visitor's email app directly so no parent handler can intercept the click.
-                      e.preventDefault()
-                      e.stopPropagation()
-                      window.location.href = mail
-                      onSelect?.(key)
-                    }}
-                  >
-                    {optionBody(icon, label, detail)}
-                  </a>
-                )}
-              </li>
-            ))}
+            <li>
+              {/* Opens WhatsApp in a new tab; the popup then closes. */}
+              <a className="copts__opt" href={wa} target="_blank" rel="noopener noreferrer" onClick={() => onSelect?.('wa')}>
+                {optionBody(MessageCircle, 'Contact via WhatsApp', waDisplay)}
+              </a>
+            </li>
+            <li>
+              <a
+                className="copts__opt"
+                href={mail}
+                onClick={(e) => {
+                  // Open the visitor's email app directly so no parent handler can intercept the click.
+                  e.preventDefault()
+                  e.stopPropagation()
+                  window.location.href = mail
+                  onSelect?.('mail')
+                }}
+              >
+                {optionBody(Mail, 'Contact via Email', popupContact.email)}
+              </a>
+            </li>
+            <li>
+              {/* Opens only the meeting request form inside this popup. */}
+              <button type="button" className="copts__opt" onClick={() => setView('meeting')}>
+                {optionBody(CalendarDays, 'Book a Meeting', 'Choose a time that suits you')}
+              </button>
+            </li>
           </ul>
         </>
       )}

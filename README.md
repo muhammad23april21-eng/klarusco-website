@@ -56,7 +56,15 @@ If the form says it couldn't send, look at **hPanel → Advanced → PHP error l
 
 ### Local development
 
-`npm run dev` has no PHP, so the form shows its email/WhatsApp fallback. To test the endpoint locally, run `php -S localhost:8099 -t public` with `KLARUS_MAIL_CONFIG` pointing to a test `mail.ini`. Production builds read `VITE_FORM_ENDPOINT=/api/contact.php` from `.env.production`.
+`npm run dev` has no PHP, so the contact form shows its email/WhatsApp fallback. Production builds read `VITE_FORM_ENDPOINT=/api/contact.php` and `VITE_BOOKING_ENDPOINT=/api/booking.php` from `.env.production`.
+
+**Meeting requests during development:** `.env.development` points the popup's meeting form at `/api/booking.php`, and the Vite dev server forwards `/api/*` to a local PHP server. Run both:
+
+1. Create `private/mail.ini` in the project folder (git-ignored) from [`server-config/mail.ini.example`](server-config/mail.ini.example) with real SMTP details, or set `KLARUS_MAIL_CONFIG` to another `mail.ini`.
+2. `npm run dev:api` — PHP server on `127.0.0.1:8099` (needs PHP 8.1+ on your PATH).
+3. `npm run dev` — the site; meeting requests now send real emails through that `mail.ini`.
+
+Without the PHP server running, the meeting form shows a "could not be sent" error.
 
 ## Editing content
 

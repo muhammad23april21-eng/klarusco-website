@@ -65,7 +65,7 @@ export function Header() {
         </nav>
 
         <div className="header__actions">
-          <NavLink to={routes.pricing} className="btn btn--gold header__cta">
+          <NavLink to={routes.contact} className="btn btn--gold header__cta">
             <span>Get a Quote</span>
             <ArrowRight className="btn__arrow" size={16} aria-hidden="true" />
           </NavLink>
@@ -115,7 +115,7 @@ export function Header() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <NavLink to={routes.pricing} className="btn btn--gold">
+              <NavLink to={routes.contact} className="btn btn--gold">
                 <span>Get a Quote</span>
               </NavLink>
             </motion.div>

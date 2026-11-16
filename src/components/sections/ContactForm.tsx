@@ -337,9 +337,16 @@ export function ContactForm() {
     <ContactOptionsModal
       open={optionsOpen}
       onClose={closeOptions}
-      summary={text}
       sent={status === "sent"}
       onSelect={selectOption}
+      prefill={{
+        name: values.representativeName.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim() ? fullNumber(values) : "",
+        company: values.companyName.trim(),
+        countryCode: values.country,
+      }}
+      enquiry={status === "sent" ? payload(values) : undefined}
     />
   );
 

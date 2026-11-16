@@ -30,16 +30,17 @@ export const config = {
   bookingUrl: (env.VITE_BOOKING_URL as string | undefined)?.trim() || '',
   /** Optional form backend (e.g. a Formspree endpoint) that accepts JSON POSTs. Set VITE_FORM_ENDPOINT */
   formEndpoint: (env.VITE_FORM_ENDPOINT as string | undefined)?.trim() || '',
+  /** Meeting-request / WhatsApp-notification backend used by the contact-options popup. Set VITE_BOOKING_ENDPOINT */
+  bookingEndpoint: (env.VITE_BOOKING_ENDPOINT as string | undefined)?.trim() || '',
 }
 
 /**
  * Contact details for the contact-options popup shown after the Contact Us form is submitted.
- * WhatsApp number and meeting link are still dummies until the real details are provided.
  * Replace these values (or set VITE_WHATSAPP_NUMBER / VITE_CONTACT_EMAIL / VITE_BOOKING_URL,
- * which take priority).
+ * which take priority). Meeting requests are made inside the popup (see BookingForm), not via meetingUrl.
  */
 export const placeholderContact = {
-  whatsappNumber: '15550000000', // dummy (+1 555 000 0000)
+  whatsappNumber: '923228504060', // +92 322 8504060
   email: 'info@klarusco.com',
   meetingUrl: 'https://example.com/book-a-meeting', // dummy
 }

@@ -164,14 +164,14 @@ foreach (array_slice(is_array($in['resources'] ?? null) ? $in['resources'] : [],
 
 $errors = [];
 if (mb_strlen($d['companyName']) < 2) $errors[] = 'companyName';
-if ($d['country'] === '') $errors[] = 'country';
+// country is optional
 if (mb_strlen($d['representativeName']) < 2) $errors[] = 'representativeName';
 if (!filter_var($d['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'email';
 if (!preg_match('/^\+?[0-9 ()\-]{6,40}$/', $d['contactNumber'])) $errors[] = 'contactNumber';
 if ($d['businessType'] === '') $errors[] = 'businessType';
 if ($d['systemInUse'] === '') $errors[] = 'systemInUse';
 if ($d['planModel'] === '') $errors[] = 'planModel';
-if (mb_strlen($d['requirements']) < 10) $errors[] = 'requirements';
+// requirements are optional
 if ($errors) {
     respond(422, ['ok' => false, 'error' => 'validation', 'fields' => $errors]);
 }
@@ -291,7 +291,7 @@ if ($resources) {
 $adminBody = "New quote request from the klarusco.com contact form\n"
     . str_repeat('-', 52) . "\n\n"
     . "Company name:        {$d['companyName']}\n"
-    . "Country:             {$d['country']}\n"
+    . "Country:             " . ($d['country'] !== '' ? $d['country'] : 'Not provided') . "\n"
     . "Representative name: {$d['representativeName']}\n"
     . "Email:               {$d['email']}\n"
     . "Contact number:      {$d['contactNumber']}\n"
@@ -299,7 +299,7 @@ $adminBody = "New quote request from the klarusco.com contact form\n"
     . "System in use:       {$d['systemInUse']}\n"
     . "Plan model:          {$d['planModel']}\n"
     . ($resLines !== '' ? "\n" . $resLines : '')
-    . "\nRequirements:\n{$d['requirements']}\n\n"
+    . "\nRequirements:\n" . ($d['requirements'] !== '' ? $d['requirements'] : 'Not provided') . "\n\n"
     . str_repeat('-', 52) . "\n"
     . 'Submitted: ' . gmdate('Y-m-d H:i') . " UTC\n"
     . "Reply to this email to respond directly to {$d['representativeName']}.\n";

@@ -89,7 +89,7 @@ function validate(v: Values): Errors {
   const e: Errors = {};
   if (v.companyName.trim().length < 2)
     e.companyName = "Please enter your company name.";
-  if (!v.country) e.country = "Please select your country.";
+  // Country is optional
   if (v.representativeName.trim().length < 2)
     e.representativeName = "Please enter the representative’s name.";
   if (!v.email.trim()) e.email = "Please enter your email address.";
@@ -110,10 +110,8 @@ function validate(v: Values): Errors {
       e.resources = `Please enter ${resourceColumn[v.planModel].unit} for at least one role, or tick “Not Sure”.`;
     }
   }
-  if (v.requirements.trim().length < 10)
-    e.requirements =
-      "Please tell us a little more about your requirements (at least 10 characters).";
-  else if (v.requirements.length > 2000)
+  // Requirements are optional; only the length cap applies
+  if (v.requirements.length > 2000)
     e.requirements = "Please keep your requirements under 2,000 characters.";
   return e;
 }
@@ -166,7 +164,7 @@ function summarise(v: Values) {
     : null;
   return [
     `Company name: ${p.companyName}`,
-    `Country: ${p.country}`,
+    `Country: ${p.country || "Not provided"}`,
     `Representative name: ${p.representativeName}`,
     `Email: ${p.email}`,
     `Contact number: ${p.contactNumber}`,
@@ -174,8 +172,8 @@ function summarise(v: Values) {
     `System in use: ${p.systemInUse}`,
     `Plan model: ${p.planModel}`,
     res,
-    "",
-    p.requirements,
+    p.requirements ? "" : null,
+    p.requirements || null,
   ]
     .filter((l) => l !== null)
     .join("\n");
@@ -215,14 +213,24 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   // Contact options (WhatsApp / email / meeting) shown after a valid submission
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const closeOptions = useCallback(() => setOptionsOpen(false), []);
+  // After a confirmed submission the Thank You message waits until the visitor picks a contact option
+  const [doneVisible, setDoneVisible] = useState(false);
+  const closeOptions = useCallback(() => {
+    setOptionsOpen(false);
+    // The request was already delivered: closing the popup without choosing still shows the Thank You message
+    if (status === "sent") setDoneVisible(true);
+  }, [status]);
+  const selectOption = useCallback(() => {
+    setOptionsOpen(false);
+    if (status === "sent") setDoneVisible(true);
+  }, [status]);
   // Guards against duplicate submissions while a request is in flight
   const submittingRef = useRef(false);
   const doneRef = useRef<HTMLDivElement>(null);
   // Bring the success message into view once the request is confirmed
   useEffect(() => {
-    if (status === "sent") doneRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [status]);
+    if (doneVisible) doneRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [doneVisible]);
 
   const update = (patch: Partial<Values>, keys: FieldKey[]) => {
     const next = { ...values, ...patch };
@@ -285,8 +293,10 @@ export function ContactForm() {
       });
       // Success only when the backend confirms it: HTTP 2xx and { ok: true }
       const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
-      setOptionsOpen(false);
-      setStatus(res.ok && body?.ok === true ? "sent" : "error");
+      const ok = res.ok && body?.ok === true;
+      setStatus(ok ? "sent" : "error");
+      // Emails are sent: offer WhatsApp / email / meeting before showing the Thank You message
+      setOptionsOpen(ok);
     } catch {
       setOptionsOpen(false);
       setStatus("error");
@@ -316,9 +326,10 @@ export function ContactForm() {
         <AlertCircle size={13} aria-hidden="true" /> {errors[k]}
       </span>
     ) : null;
-  const label = (k: FieldKey, text: string) => (
+  const label = (k: FieldKey, text: string, required = true) => (
     <label htmlFor={`${uid}-${k}`}>
-      {text} <span aria-hidden="true">*</span>
+      {text}
+      {required && <> <span aria-hidden="true">*</span></>}
     </label>
   );
 
@@ -328,11 +339,13 @@ export function ContactForm() {
       onClose={closeOptions}
       summary={text}
       sent={status === "sent"}
+      onSelect={selectOption}
     />
   );
 
-  if (status === "sent") {
+  if (status === "sent" && doneVisible) {
     return (
+      <>
       <motion.div
         ref={doneRef}
         className="form-done"
@@ -345,6 +358,8 @@ export function ContactForm() {
         <h3>Thank you — your quote request has been sent.</h3>
         <p>Our team will review your information and get back to you.</p>
       </motion.div>
+      {optionsModal}
+      </>
     );
   }
 
@@ -375,10 +390,9 @@ export function ContactForm() {
             {err("companyName")}
           </div>
           <div className="field">
-            {label("country", "Country")}
+            {label("country", "Country", false)}
             <select
               {...field("country")}
-              required
               value={values.country}
               onChange={(e) => {
                 const code = e.target.value;
@@ -638,11 +652,11 @@ export function ContactForm() {
           {label(
             "requirements",
             "Tell us about your business and accounting requirements",
+            false,
           )}
           <textarea
             {...field("requirements")}
             rows={7}
-            required
             value={values.requirements}
             onChange={(e) => set("requirements", e.target.value)}
           />

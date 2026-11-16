@@ -12,10 +12,12 @@ interface Props {
   summary: string
   /** True when the request was also delivered to the form backend. */
   sent: boolean
+  /** Called after the visitor picks an option (its link action has already been triggered). */
+  onSelect?: (key: string) => void
 }
 
 /** Shown after a valid Contact Us submission: WhatsApp, email or a meeting. */
-export function ContactOptionsModal({ open, onClose, summary, sent }: Props) {
+export function ContactOptionsModal({ open, onClose, summary, sent, onSelect }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -83,16 +85,16 @@ export function ContactOptionsModal({ open, onClose, summary, sent }: Props) {
                     className="copts__opt"
                     href={href}
                     {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                    {...(key === 'mail'
-                      ? {
-                          onClick: (e: MouseEvent<HTMLAnchorElement>) => {
-                            // Open the visitor's email app directly so no parent handler can intercept the click.
-                            e.preventDefault()
-                            e.stopPropagation()
-                            window.location.href = href
-                          },
-                        }
-                      : {})}
+                    onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                      if (key === 'mail') {
+                        // Open the visitor's email app directly so no parent handler can intercept the click.
+                        e.preventDefault()
+                        e.stopPropagation()
+                        window.location.href = href
+                      }
+                      // WhatsApp / meeting links open in a new tab via their default action.
+                      onSelect?.(key)
+                    }}
                   >
                     <span className="copts__icon" aria-hidden="true">
                       <Icon size={22} strokeWidth={1.5} />

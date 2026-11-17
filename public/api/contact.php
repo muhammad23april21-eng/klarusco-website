@@ -159,15 +159,13 @@ foreach (array_slice(is_array($in['resources'] ?? null) ? $in['resources'] : [],
 }
 
 $errors = [];
-if (mb_strlen($d['companyName']) < 2) $errors[] = 'companyName';
-// country is optional
-if (mb_strlen($d['representativeName']) < 2) $errors[] = 'representativeName';
+// Required: email address, contact number, business type, system in use and plan model.
+// Company name, country, representative name, resources and requirements are optional.
 if (!filter_var($d['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'email';
 if (!preg_match('/^\+?[0-9 ()\-]{6,40}$/', $d['contactNumber'])) $errors[] = 'contactNumber';
 if ($d['businessType'] === '') $errors[] = 'businessType';
 if ($d['systemInUse'] === '') $errors[] = 'systemInUse';
 if ($d['planModel'] === '') $errors[] = 'planModel';
-// requirements are optional
 if ($errors) {
     respond(422, ['ok' => false, 'error' => 'validation', 'fields' => $errors]);
 }
@@ -289,28 +287,32 @@ if ($resources) {
     foreach ($resources as [$n, $v]) $resLines .= "  - $n" . ($v !== null ? ": $v" : '') . "\n";
 }
 
+// Optional fields left blank read "Not provided".
+$or = fn(string $v) => $v !== '' ? $v : 'Not provided';
+$contactName = $d['representativeName'] !== '' ? $d['representativeName'] : $d['email'];
+
 $adminBody = "New quote request from the klarusco.com contact form\n"
     . str_repeat('-', 52) . "\n\n"
-    . "Company name:        {$d['companyName']}\n"
-    . "Country:             " . ($d['country'] !== '' ? $d['country'] : 'Not provided') . "\n"
-    . "Representative name: {$d['representativeName']}\n"
+    . "Company name:        {$or($d['companyName'])}\n"
+    . "Country:             {$or($d['country'])}\n"
+    . "Representative name: {$or($d['representativeName'])}\n"
     . "Email:               {$d['email']}\n"
     . "Contact number:      {$d['contactNumber']}\n"
-    . "Business type:       {$d['businessType']}\n"
-    . "System in use:       {$d['systemInUse']}\n"
-    . "Plan model:          {$d['planModel']}\n"
+    . "Business type:       {$or($d['businessType'])}\n"
+    . "System in use:       {$or($d['systemInUse'])}\n"
+    . "Plan model:          {$or($d['planModel'])}\n"
     . ($resLines !== '' ? "\n" . $resLines : '')
-    . "\nRequirements:\n" . ($d['requirements'] !== '' ? $d['requirements'] : 'Not provided') . "\n\n"
+    . "\nRequirements:\n" . $or($d['requirements']) . "\n\n"
     . str_repeat('-', 52) . "\n"
     . 'Submitted: ' . gmdate('Y-m-d H:i') . " UTC\n"
-    . "Reply to this email to respond directly to {$d['representativeName']}.\n";
+    . "Reply to this email to respond directly to $contactName.\n";
 
 // Confirmation: name, company and plan only — never the visitor's free-text message.
-$userBody = "Dear {$d['representativeName']},\n\n"
+$userBody = ($d['representativeName'] !== '' ? "Dear {$d['representativeName']},\n\n" : "Hello,\n\n")
     . "Thank you for contacting Klarus & Co. We have received your quote request and our team "
     . "will review your information and get back to you shortly.\n\n"
-    . "Company:        {$d['companyName']}\n"
-    . "Selected plan:  {$d['planModel']}\n\n"
+    . "Company:        {$or($d['companyName'])}\n"
+    . "Selected plan:  {$or($d['planModel'])}\n\n"
     . "If you need to add anything, simply reply to this email.\n\n"
     . "Kind regards,\n"
     . "Klarus & Co\n"
@@ -328,7 +330,7 @@ try {
         'fromEmail' => $fromEmail, 'fromName' => 'Klarus & Co Website',
         'toEmail' => $toEmail, 'toName' => 'Klarus & Co',
         'replyTo' => $d['email'], 'replyName' => $d['representativeName'],
-        'subject' => "New quote request: {$d['companyName']}",
+        'subject' => 'New quote request: ' . ($d['companyName'] !== '' ? $d['companyName'] : $contactName),
     ], $adminBody));
 } catch (Throwable $e) {
     error_log('[contact] notification failed: ' . $e->getMessage());

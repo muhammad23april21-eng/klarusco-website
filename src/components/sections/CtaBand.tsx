@@ -36,7 +36,7 @@ export function CtaBand({
           </Reveal>
         </div>
         <Reveal delay={0.3} className="cta-band__actions">
-          <ButtonLink to={routes.pricing} size="lg">
+          <ButtonLink to={routes.contact} size="lg">
             Get a Quote
           </ButtonLink>
         </Reveal>

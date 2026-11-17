@@ -87,11 +87,7 @@ const showsResources = (p: Values["planModel"]): p is "hourly" | "monthly" =>
 
 function validate(v: Values): Errors {
   const e: Errors = {};
-  if (v.companyName.trim().length < 2)
-    e.companyName = "Please enter your company name.";
-  // Country is optional
-  if (v.representativeName.trim().length < 2)
-    e.representativeName = "Please enter the representative’s name.";
+  // Company name, country and representative name are optional
   if (!v.email.trim()) e.email = "Please enter your email address.";
   else if (!emailRe.test(v.email.trim()))
     e.email = "Please enter a valid email address.";
@@ -162,14 +158,14 @@ function summarise(v: Values) {
     ? `Resources (${p.resourceMeasure}):\n${p.resources.map((r) => `  • ${r.resource}${r.value !== null ? `: ${r.value}` : ""}`).join("\n")}`
     : null;
   return [
-    `Company name: ${p.companyName}`,
+    `Company name: ${p.companyName || "Not provided"}`,
     `Country: ${p.country || "Not provided"}`,
-    `Representative name: ${p.representativeName}`,
+    `Representative name: ${p.representativeName || "Not provided"}`,
     `Email: ${p.email}`,
     `Contact number: ${p.contactNumber}`,
-    `Business type: ${p.businessType}`,
-    `System in use: ${p.systemInUse}`,
-    `Plan model: ${p.planModel}`,
+    `Business type: ${p.businessType || "Not provided"}`,
+    `System in use: ${p.systemInUse || "Not provided"}`,
+    `Plan model: ${p.planModel || "Not provided"}`,
     res,
     p.requirements ? "" : null,
     p.requirements ? `Requirements:\n${p.requirements}` : null,
@@ -389,12 +385,11 @@ export function ContactForm() {
       <Section title="Basic information">
         <div className="form__row">
           <div className="field">
-            {label("companyName", "Company Name")}
+            {label("companyName", "Company Name", false)}
             <input
               {...field("companyName")}
               type="text"
               autoComplete="organization"
-              required
               value={values.companyName}
               onChange={(e) => set("companyName", e.target.value)}
             />
@@ -430,12 +425,11 @@ export function ContactForm() {
         </div>
         <div className="form__row">
           <div className="field">
-            {label("representativeName", "Representative Name")}
+            {label("representativeName", "Representative Name", false)}
             <input
               {...field("representativeName")}
               type="text"
               autoComplete="name"
-              required
               value={values.representativeName}
               onChange={(e) => set("representativeName", e.target.value)}
             />

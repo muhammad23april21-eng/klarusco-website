@@ -23,7 +23,7 @@ export function Footer() {
               ))}
             </p>
             <div className="footer__cta">
-              <Link to={routes.pricing} className="btn btn--gold">
+              <Link to={routes.contact} className="btn btn--gold">
                 <span>Get a Quote</span>
               </Link>
             </div>

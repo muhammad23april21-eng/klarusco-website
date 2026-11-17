@@ -78,6 +78,10 @@ export const images = {
   svcBudgeting: '/images/svc-budgeting.webp',
   svcCost: '/images/svc-cost.webp',
   svcActuarial: '/images/svc-actuarial.webp',
+  /** Services page only: actual vs budgeted performance chart (Budgeting & Forecasting) */
+  svcBudgetingChart: '/images/svc-budgeting-chart.webp',
+  /** Services page only: actuarial valuation report with benefit-obligation tables (Actuarial Valuation) */
+  svcActuarialReport: '/images/svc-actuarial-report.webp',
 }
 
 /* ------------------------------------------------------------------ */
@@ -116,7 +120,7 @@ export const hero = {
     'With 20+ years of professional experience, Klarus & Co provides reliable, practical, and cost-effective bookkeeping and accounting solutions tailored to your business.',
   body:
     'From maintaining accurate financial records and delivering timely reports to providing flexible ongoing support, we help you stay financially organized, gain better visibility, and focus on running and growing your business.',
-  primaryCta: { label: 'Get a Quote', to: '/pricing' },
+  primaryCta: { label: 'Get a Quote', to: '/contact' },
   secondaryCta: { label: 'Book a Meeting', to: '/book-a-meeting' },
 }
 
@@ -302,7 +306,7 @@ export const services = {
         'Professional support with financial planning, budgeting, forecasting, and monitoring actual performance against expectations. We help businesses develop realistic budgets, anticipate financial requirements, and establish effective financial targets.',
         'Regular budget monitoring and variance analysis enable management to identify deviations, take corrective action, and maintain better financial control.',
       ],
-      image: images.svcBudgeting,
+      image: images.svcBudgetingChart,
     },
     {
       icon: 'costControl' as IconKey,
@@ -320,7 +324,7 @@ export const services = {
         'Professional actuarial valuation services to support businesses in meeting applicable financial reporting and accounting requirements. We provide actuarial assessment and valuation support for employee benefit obligations and other relevant long-term financial commitments.',
         'Our services help businesses obtain reliable valuation information for financial statements, reporting purposes, and informed financial planning.',
       ],
-      image: images.svcActuarial,
+      image: images.svcActuarialReport,
     },
   ].map((s) => ({ ...s, slug: s.title.toLowerCase().replace(/&/g, 'and').replace(/[^a-z]+/g, '-') })) as Service[],
 }

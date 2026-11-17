@@ -15,9 +15,9 @@ const imageAlt: Record<string, string> = {
   bookkeeping: 'Accounting documents, calculator and notes on a desk',
   'financial-reporting': 'Financial reporting dashboard with performance charts',
   'management-consultancy': 'Planning notes laid out on a desk beside a keyboard',
-  'budgeting-and-forecasting': 'Hand-drawn financial projection chart with ruler and pens',
+  'budgeting-and-forecasting': 'Revenue chart comparing actual performance with budgeted performance month by month',
   'cost-control': 'Financial forms and expense documents with a pen',
-  'actuarial-valuation': 'Statistical charts and analytical data on a laptop screen',
+  'actuarial-valuation': 'Actuarial valuation report with employee benefit assumptions, obligation figures and sensitivity analysis',
 }
 
 function ServiceHead({ s, tone = 'dark' }: { s: Service; tone?: 'dark' | 'light' }) {
